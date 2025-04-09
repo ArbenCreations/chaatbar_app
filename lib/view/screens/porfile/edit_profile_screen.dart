@@ -154,6 +154,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           isClickable: false
                       ),
                       SizedBox(height: 35),
+                      email !=
+                          "guest@isekaitech.com" ?
                       Container(
                         width: mediaWidth * 0.45,
                         child: ElevatedButton(
@@ -181,7 +183,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             _saveChanges();
                           },
                         ),
-                      ),
+                      ): SizedBox(),
                       email !=
                           "guest@isekaitech.com" ?
                       Align(
