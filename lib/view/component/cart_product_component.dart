@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../model/response/rf_bite/productListResponse.dart';
-import '../../theme/AppColor.dart';
+import '../../model/response/productListResponse.dart';
+import '../../theme/CustomAppColor.dart';
 import '../../utils/Util.dart';
 
 class CartProductComponent extends StatelessWidget {
   final ProductData item;
-  final double screenWidth;
+  final double mediaWidth;
   final double itemTotalPrice;
   final double addOnTotalPrice;
   final bool isDarkMode;
@@ -20,7 +20,7 @@ class CartProductComponent extends StatelessWidget {
   const CartProductComponent({
     Key? key,
     required this.item,
-    required this.screenWidth,
+    required this.mediaWidth,
     required this.isDarkMode,
     required this.itemTotalPrice,
     required this.addOnTotalPrice,
@@ -34,12 +34,26 @@ class CartProductComponent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        padding: EdgeInsets.only(bottom: 12),
-        margin: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        padding: EdgeInsets.symmetric(vertical: 8),
+        margin: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
-            border: Border(
-                bottom: BorderSide(
-                    width: 0.1, color: Colors.black87))),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            width: 0.1,
+            color: Colors.white,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Color.fromRGBO(0, 0, 0, 0.07),
+
+              offset: Offset(0, 1),
+              // Adjust X and Yoffset to match Figma
+              blurRadius: 5,
+              spreadRadius: 0.6,
+            ),
+          ],
+        ),
         child: Center(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,94 +61,90 @@ class CartProductComponent extends StatelessWidget {
             children: [
               item.imageUrl == "" || item.imageUrl == null
                   ? Container(
-                decoration: BoxDecoration(
-                    borderRadius:
-                    BorderRadius.circular(12.5),
-                    color: primaryColor),
-                child: Image.asset(
-                  "assets/pizza_image.jpg",
-                  height: 75,
-                  width: 75,
-                  fit: BoxFit.fitWidth,
-                ),
-              )
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(30),
+                          color: primaryColor),
+                      child: Image.asset(
+                        "assets/appLogo.png",
+                        height: 65,
+                        width: 60,
+                        fit: BoxFit.fitWidth,
+                      ),
+                    )
                   : Container(
-                decoration: BoxDecoration(
-                  borderRadius:
-                  BorderRadius.circular(12.5),
-                  border: Border.all(
-                      color: Theme.of(context).cardColor,
-                      width: 0.3),
-                  color: Colors.white,
-                ),
-                child: ClipRRect(
-                  borderRadius:
-                  BorderRadius.circular(12.5),
-                  child: Image.network(
-                    "${item.imageUrl}",
-                    height: 75,
-                    width: 75,
-                    fit: BoxFit.cover,
-                    errorBuilder: (BuildContext context,
-                        Object exception,
-                        StackTrace? stackTrace) {
-                      return Container(
-                        child: Image.asset(
-                          "assets/pizza_image.jpg",
-                          height: 75,
-                          width: 75,
-                          fit: BoxFit.fitWidth,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                            color: Theme.of(context).cardColor, width: 0.3),
+                        color: Colors.white,
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.network(
+                          "${item.imageUrl}",
+                          height: 65,
+                          width: 60,
+                          fit: BoxFit.cover,
+                          errorBuilder: (BuildContext context, Object exception,
+                              StackTrace? stackTrace) {
+                            return Container(
+                              child: Image.asset(
+                                "assets/appLogo.png",
+                                height: 50,
+                                width: 50,
+                                fit: BoxFit.fitWidth,
+                              ),
+                            );
+                          },
+                          loadingBuilder: (BuildContext context, Widget child,
+                              ImageChunkEvent? loadingProgress) {
+                            if (loadingProgress == null) {
+                              return child;
+                            } else {
+                              return Shimmer.fromColors(
+                                baseColor: Colors.white38,
+                                highlightColor: Colors.grey,
+                                child: Container(
+                                  height: 65,
+                                  width: 60,
+                                  color: Colors.white,
+                                ),
+                              );
+                            }
+                          },
                         ),
-                      );
-                    },
-                    loadingBuilder: (BuildContext context,
-                        Widget child,
-                        ImageChunkEvent?
-                        loadingProgress) {
-                      if (loadingProgress == null) {
-                        return child;
-                      } else {
-                        return Shimmer.fromColors(
-                          baseColor: Colors.white38,
-                          highlightColor: Colors.grey,
-                          child: Container(
-                            height: 75,
-                            width: 75,
-                            color: Colors.white,
-                          ),
-                        );
-                      }
-                    },
-                  ),
-                ),
-              ),
+                      ),
+                    ),
               Padding(
-                padding:
-                const EdgeInsets.only( left: 12),
+                padding: const EdgeInsets.only(left: 10),
                 child: Container(
-                  width: screenWidth * 0.65,
+                  width: mediaWidth * 0.7,
                   child: Column(
                     children: [
                       Container(
-                        height: 80,
+                        //height: 90,
                         child: Center(
                           child: Column(
                             mainAxisSize: MainAxisSize.max,
-                            crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                            mainAxisAlignment:
-                            MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              item.isBuy1Get1 == true ?
-                              Text("Buy 1 GET 1",style: TextStyle(fontSize: 9,fontWeight: FontWeight.bold,color: Colors.red),):SizedBox(),
+                              item.isBuy1Get1 == true
+                                  ? Text(
+                                      "Buy 1 GET 1",
+                                      style: TextStyle(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.red),
+                                    )
+                                  : SizedBox(),
                               Row(
                                 mainAxisSize: MainAxisSize.max,
                                 mainAxisAlignment:
-                                MainAxisAlignment
-                                    .spaceBetween,
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Container(
-                                    width: screenWidth*0.55,
+                                    width: mediaWidth * 0.5,
                                     child: Row(
                                       children: [
                                         Flexible(
@@ -143,22 +153,17 @@ class CartProductComponent extends StatelessWidget {
                                               "${item.title}",
                                             ),
                                             style: TextStyle(
-                                                fontSize: 14,
-                                                fontWeight:
-                                                FontWeight
-                                                    .w600),
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600),
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
                                         /* item?.productSizesList ==
                                                                 "[]" || item?.productSizesList?.isEmpty == true ? */
-                                        Text(
-                                            ' (\$${(item.price)})',
+                                        Text(' (\$${(item.price)})',
                                             style: TextStyle(
                                                 fontSize: 10,
-                                                color: Colors
-                                                    .grey[
-                                                700]))
+                                                color: Colors.grey[700]))
                                         //: SizedBox(),
                                       ],
                                     ),
@@ -168,65 +173,60 @@ class CartProductComponent extends StatelessWidget {
                                       child: Align(
                                           alignment: Alignment.topRight,
                                           child: Icon(
-                                            Icons.close,
-                                            color: primaryColor,
-                                            size: 18,
+                                            Icons.cancel,
+                                            color: AppColor.Secondary,
+                                            size: 24,
                                           ))),
                                 ],
                               ),
                               Row(
                                 mainAxisSize: MainAxisSize.max,
                                 mainAxisAlignment:
-                                MainAxisAlignment
-                                    .spaceBetween,
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Column(
-                                    mainAxisSize:
-                                    MainAxisSize.max,
+                                    mainAxisSize: MainAxisSize.max,
                                     crossAxisAlignment:
-                                    CrossAxisAlignment
-                                        .start,
+                                        CrossAxisAlignment.start,
                                     mainAxisAlignment:
-                                    MainAxisAlignment
-                                        .spaceBetween,
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Container(
-                                          width: screenWidth * 0.44,
+                                          width: mediaWidth * 0.44,
                                           child: Text(
-                                            item.getAddOnList()?.isEmpty == true ?
-                                            capitalizeFirstLetter(
-                                                "${item.shortDescription}") :
-                                            addOns(item),
+                                            item.getAddOnList()?.isEmpty == true
+                                                ? capitalizeFirstLetter(
+                                                    "${item.shortDescription}")
+                                                : addOns(item),
                                             style: TextStyle(
                                                 fontSize: 10,
-                                                color: Colors
-                                                    .grey[600]),
-                                            overflow:
-                                            TextOverflow
-                                                .ellipsis,
-                                            maxLines:item.getAddOnList()?.isEmpty == true ? 1: 2,
+                                                color: Colors.grey[700]),
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines:
+                                                item.getAddOnList()?.isEmpty ==
+                                                        true
+                                                    ? 1
+                                                    : 2,
                                           )),
                                       SizedBox(
                                         height: 5,
                                       ),
                                       Row(
-                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
                                         children: [
                                           Text(
-                                              '\$${itemTotalPrice}',
+                                              '\$${itemTotalPrice.toStringAsFixed(2)}',
                                               style: TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight:
-                                                  FontWeight
-                                                      .w600)),
-                                          item.getAddOnList()?.isEmpty == true ?
-                                              SizedBox():
-                                          Text(
-                                              '+\$${addOnTotalPrice}',
-                                              style: TextStyle(
-                                                  fontSize: 11,
-                                                  color: Colors
-                                                      .grey[600])),
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w600)),
+                                          item.getAddOnList()?.isEmpty == true
+                                              ? SizedBox()
+                                              : Text(
+                                                  '+\$${addOnTotalPrice.toStringAsFixed(2)}',
+                                                  style: TextStyle(
+                                                      fontSize: 13,
+                                                      color: Colors.grey[600])),
                                         ],
                                       ),
                                       SizedBox(
@@ -235,10 +235,8 @@ class CartProductComponent extends StatelessWidget {
                                     ],
                                   ),
                                   Column(
-                                    mainAxisSize:
-                                    MainAxisSize.max,
-                                    mainAxisAlignment:
-                                    MainAxisAlignment.end,
+                                    mainAxisSize: MainAxisSize.max,
+                                    mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
                                       SizedBox(
                                         height: 15,
@@ -253,9 +251,10 @@ class CartProductComponent extends StatelessWidget {
                                             child: Icon(
                                               Icons
                                                   .remove_circle_outline_rounded,
-                                              size: 22,
-                                              color:
-                                              AppColor.SECONDARY,
+                                              size: 20,
+                                              color: item.quantity == 0
+                                                  ? Colors.grey
+                                                  : Colors.red,
                                             ),
                                             onTap: onMinusTap,
                                           ),
@@ -265,36 +264,22 @@ class CartProductComponent extends StatelessWidget {
                                           Text(
                                             "${item.quantity.toString()}",
                                             style: TextStyle(
-                                                fontSize:
-                                                13,
-                                                fontWeight:
-                                                FontWeight
-                                                    .bold),
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold),
                                           ),
                                           SizedBox(
                                             width: 4,
                                           ),
                                           GestureDetector(
                                             child: Icon(
-                                              Icons
-                                                  .add_circle_outlined,
-                                              size: 22,
-                                              color:
-                                              AppColor.SECONDARY,
+                                              Icons.add_circle_outlined,
+                                              size: 20,
+                                              color: AppColor.Primary,
                                             ),
                                             onTap: onAddTap,
                                           ),
                                         ],
                                       )
-                                      /* : Text(
-                                                            '${item?.quantity}',
-                                                            style: TextStyle(
-                                                                fontSize:
-                                                                    12,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600),
-                                                          ),*/
                                     ],
                                   ),
                                 ],
@@ -303,151 +288,6 @@ class CartProductComponent extends StatelessWidget {
                           ),
                         ),
                       ),
-                      /*productSize.isNotEmpty
-                                          ? Container(
-                                              width: screenWidth * 0.48,
-                                              child: Wrap(
-                                                spacing: 10,
-                                                runSpacing: 5,
-                                                children: List.generate(
-                                                    productSize.length,
-                                                    (index) {
-                                                  itemTotalPrice = itemTotalPrice +
-                                                      (int.parse(
-                                                              "${productSize[index].price}") *
-                                                          productSize[index]
-                                                              .quantity);
-                                                  return productSize[index]
-                                                              .quantity >
-                                                          0
-                                                      ? Container(
-                                                          width: screenWidth *
-                                                              0.48,
-                                                          child: Row(
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .spaceBetween,
-                                                            children: [
-                                                              Row(
-                                                                children: [
-                                                                  ConstrainedBox(
-                                                                    constraints:
-                                                                        BoxConstraints(
-                                                                            maxWidth:
-                                                                                screenWidth * 0.173),
-                                                                    child: Text(
-                                                                      capitalizeFirstLetter(
-                                                                          '${productSize[index].size}: '),
-                                                                      style: TextStyle(
-                                                                          fontSize:
-                                                                              11,
-                                                                          color:
-                                                                              Colors.grey[700]),
-                                                                      overflow:
-                                                                          TextOverflow
-                                                                              .ellipsis,
-                                                                    ),
-                                                                  ),
-                                                                  Text(
-                                                                    '\$${productSize[index].price}/item ',
-                                                                    style: TextStyle(
-                                                                        fontSize:
-                                                                            11,
-                                                                        color: Colors
-                                                                            .grey[700]),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              Row(
-                                                                children: [
-                                                                  GestureDetector(
-                                                                    child: Icon(
-                                                                      Icons
-                                                                          .remove_circle_outline_rounded,
-                                                                      size: 18,
-                                                                      color:
-                                                                          primaryColor,
-                                                                    ),
-                                                                    onTap: () {
-                                                                      if (int.parse(
-                                                                              "${productSize[index].quantity}") >
-                                                                          0) {
-                                                                        productSize[index]
-                                                                            .quantity--;
-                                                                        item?.quantity--;
-
-                                                                        setState(
-                                                                            () {
-                                                                          item?.productSizesList =
-                                                                              jsonEncode(productSize);
-                                                                          itemTotalPrice =
-                                                                              itemTotalPrice + (int.parse("${productSize[index].price}") * productSize[index].quantity);
-                                                                        });
-                                                                        deleteProductInDb(item
-                                                                            as ProductData);
-                                                                      }
-                                                                    },
-                                                                  ),
-                                                                  ConstrainedBox(
-                                                                    constraints: BoxConstraints(
-                                                                        minWidth:
-                                                                            12,
-                                                                        maxWidth:
-                                                                            15),
-                                                                    child:
-                                                                        Container(
-                                                                      child:
-                                                                          Center(
-                                                                        child:
-                                                                            Text(
-                                                                          "${productSize[index].quantity.toString()}",
-                                                                          style: TextStyle(
-                                                                              fontSize: 12,
-                                                                              color: Colors.grey[700]),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                  GestureDetector(
-                                                                    child: Icon(
-                                                                      Icons
-                                                                          .add_circle_outline_outlined,
-                                                                      size: 18,
-                                                                      color:
-                                                                          primaryColor,
-                                                                    ),
-                                                                    onTap: () {
-                                                                      setState(
-                                                                          () {
-                                                                        if (int.parse("${item?.quantity}") <=
-                                                                            int.parse("${item?.qtyLimit}")) {
-                                                                          productSize[index]
-                                                                              .quantity++;
-                                                                          item?.quantity++;
-
-                                                                          setState(
-                                                                              () {
-                                                                            item?.productSizesList =
-                                                                                jsonEncode(productSize);
-                                                                            itemTotalPrice =
-                                                                                itemTotalPrice + (int.parse("${productSize[index].price}") * productSize[index].quantity);
-                                                                          });
-                                                                          addProductInDb(item
-                                                                              as ProductData);
-                                                                        }
-                                                                      });
-                                                                    },
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        )
-                                                      : SizedBox();
-                                                }),
-                                              ),
-                                            )
-                                          : SizedBox()*/
                     ],
                   ),
                 ),
@@ -457,23 +297,19 @@ class CartProductComponent extends StatelessWidget {
         ));
   }
 
-  String addOns(ProductData item){
-    String text ="Add Ons: ";
-    item.getAddOnList().forEach((category){
-      if(category.addOnCategoryType == "multiple") {
+  String addOns(ProductData item) {
+    String text = "";
+    item.getAddOnList().forEach((category) {
+      if (category.addOnCategoryType == "multiple") {
         category.addOns?.forEach((addOn) {
-          text = text + capitalizeFirstLetter("+${addOn.name} ");
+          text = capitalizeFirstLetter("${addOn.name} ");
         });
-      }
-      else {
+      } else {
         category.addOns?.forEach((addOn) {
-            text = text + capitalizeFirstLetter("+${addOn.name} ");
-
+          text = capitalizeFirstLetter("${addOn.name} ");
         });
       }
     });
     return text;
   }
 }
-
-

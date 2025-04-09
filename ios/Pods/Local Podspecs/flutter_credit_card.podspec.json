@@ -1,0 +1,32 @@
+{
+  "name": "flutter_credit_card",
+  "version": "0.0.1",
+  "summary": "Flutter Credit Card Widget Plugin Package",
+  "description": "A Credit Card widget package with support of entering card details, and animations like card flip\nand float.",
+  "homepage": "https://github.com/simformsolutions/flutter_credit_card",
+  "license": {
+    "type": "MIT",
+    "file": "../LICENSE"
+  },
+  "authors": {
+    "Simform Solutions": "developer@simform.com"
+  },
+  "source": {
+    "http": "https://github.com/SimformSolutionsPvtLtd/flutter_credit_card/tree/master"
+  },
+  "source_files": "Classes/**/*",
+  "dependencies": {
+    "Flutter": [
+
+    ]
+  },
+  "platforms": {
+    "ios": "11.0"
+  },
+  "pod_target_xcconfig": {
+    "DEFINES_MODULE": "YES",
+    "EXCLUDED_ARCHS[sdk=iphonesimulator*]": "i386"
+  },
+  "swift_versions": "5.0",
+  "swift_version": "5.0"
+}

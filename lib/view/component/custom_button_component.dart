@@ -6,14 +6,14 @@ class CustomButtonComponent extends StatelessWidget {
   late final bool isDarkMode;
   late final Color buttonColor;
   late final Color textColor;
-  late final double screenWidth;
+  late final double mediaWidth;
   late final double verticalPadding;
   final Function() onTap;
 
   CustomButtonComponent(
       {this.isClickable = true,
       required this.text,
-      required this.screenWidth,
+      required this.mediaWidth,
       required this.textColor,
       required this.buttonColor,
       required this.isDarkMode,
@@ -29,18 +29,17 @@ class CustomButtonComponent extends StatelessWidget {
         alignment: Alignment.center,
         margin: EdgeInsets.symmetric(horizontal: 5, vertical: 4),
         padding: EdgeInsets.symmetric(horizontal: 14, vertical: verticalPadding),
-        width: screenWidth,
+        width: mediaWidth,
         decoration: BoxDecoration(
-            border: Border.all(
-                color: isDarkMode
-                    ? isClickable
-                        ? Colors.white
-                        : Colors.grey
-                    : isClickable
-                        ? Colors.black
-                        : Colors.grey,
-                width: 0.8),
             borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.1),
+                spreadRadius: 1,
+                blurRadius: 10,
+                offset: Offset(0, 3),
+              ),
+            ],
             color: isDarkMode
                 ? isClickable
                     ? Colors.white

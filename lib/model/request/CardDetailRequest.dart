@@ -25,14 +25,14 @@ class CardDetailsRequest {
   final String expMonth;
   final String expYear;
   final String cvv;
-  final String brand;
+  //final String brand;
 
   CardDetailsRequest({
     required this.number,
     required this.expMonth,
     required this.expYear,
     required this.cvv,
-    required this.brand,
+   // required this.brand,
   });
 
   // Factory constructor to create an instance from JSON
@@ -42,7 +42,7 @@ class CardDetailsRequest {
       expMonth: json['exp_month'],
       expYear: json['exp_year'],
       cvv: json['cvv'],
-      brand: json['brand'],
+     // brand: json['brand'],
     );
   }
 
@@ -53,7 +53,7 @@ class CardDetailsRequest {
       'exp_month': expMonth,
       'exp_year': expYear,
       'cvv': cvv,
-      'brand': brand,
+      //'brand': brand,
     };
   }
 }

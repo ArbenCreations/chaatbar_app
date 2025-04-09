@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
-import '../../model/response/rf_bite/categoryListResponse.dart';
-import '../../model/response/rf_bite/vendorListResponse.dart';
-import '../../theme/AppColor.dart';
+import '../../model/response/categoryListResponse.dart';
+import '../../model/response/vendorListResponse.dart';
+import '../../theme/CustomAppColor.dart';
 import '../../utils/Util.dart';
 import 'circluar_profile_image.dart';
 
 class DashboardCategoryComponent extends StatelessWidget {
   final List<CategoryData?> categories;
-  final double screenWidth;
+  final double mediaWidth;
   final double screenHeight;
   final Color primaryColor;
   final bool isDarkMode;
@@ -17,7 +17,7 @@ class DashboardCategoryComponent extends StatelessWidget {
   const DashboardCategoryComponent({
     Key? key,
     required this.categories,
-    required this.screenWidth,
+    required this.mediaWidth,
     required this.screenHeight,
     required this.primaryColor,
     required this.isDarkMode,
@@ -33,55 +33,50 @@ class DashboardCategoryComponent extends StatelessWidget {
         var currentItem = categories[index];
         var currentCategoryName = categories[index]?.categoryName;
         var currentCategoryImage = categories[index]?.categoryImage;
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2.0),
-          child: GestureDetector(
-            onTap: () {
-              VendorData? data = vendorData;
-              data?.detailType = "menu";
-              data?.selectedCategoryId = currentItem?.id;
-              Navigator.pushNamed(context, "/MenuScreen", arguments: data);
-            },
-            child: Card(
-              margin: EdgeInsets.symmetric(horizontal: 3),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(100)),
-              elevation: 3,
-              shadowColor: isDarkMode ? AppColor.DARK_CARD_COLOR : Colors.white,
-              child: Container(
+        return GestureDetector(
+          onTap: () {
+            VendorData? data = vendorData;
+            data?.detailType = "menu";
+            data?.selectedCategoryId = currentItem?.id;
+            Navigator.pushNamed(context, "/MenuScreen", arguments: data);
+          },
+          child: Column(
+            children: [
+              Container(
                 decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(30),
-                    color:
-                        isDarkMode ? AppColor.DARK_CARD_COLOR : Colors.white),
-                width: 60,
-                padding: EdgeInsets.only(bottom: 8, top: 2, left: 2, right: 2),
+                    borderRadius: BorderRadius.circular(40),
+                    color: isDarkMode
+                        ? AppColor.CardDarkColor
+                        : AppColor.GreyTextColor),
+                width: 62,
+                height: 60,
+                margin: EdgeInsets.symmetric(horizontal: 4, vertical: 5),
+                //padding: EdgeInsets.only(bottom: 10, top: 10, left: 2, right: 2),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     CircularProfileImage(
-                        size: 48,
+                        size: 60,
                         imageUrl: currentCategoryImage,
                         name: "${currentCategoryName}",
                         needTextLetter: true,
                         placeholderImage: "",
                         isDarkMode: isDarkMode),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                      child: Text(
-                        capitalizeFirstLetter("${currentCategoryName}"),
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 10,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
-            ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: Text(
+                  capitalizeFirstLetter("${currentCategoryName}"),
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       },

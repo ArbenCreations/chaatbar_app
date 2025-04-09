@@ -1,17 +1,17 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:ChaatBar/model/response/rf_bite/vendorListResponse.dart';
-import 'package:device_info_plus/device_info_plus.dart';
+import 'package:TheChaatBar/model/response/vendorListResponse.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../model/response/rf_bite/profileResponse.dart';
+import '../model/response/profileResponse.dart';
 
 class Helper {
   static String valueSharedPreferences = '';
   static String vendorDetailPref = 'VendorDetail';
   static String vendor_theme = 'vendorTheme';
+  static String api_key = 'apikey';
   static String pref_token = 'token';
   static String pref_device_token = 'device_token';
   static String biometricPref = 'biometricPref';
@@ -44,13 +44,13 @@ class Helper {
   }
 
 // Write DATA
-  static Future<bool> saveDeviceToken(token) async {
+  static Future<bool> saveFirebaseToken(token) async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     return await sharedPreferences.setString(pref_device_token, token);
   }
 
   // Read Data
-  static Future<String?> getDeviceToken() async {
+  static Future<String?> getFirebaseToken() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     return sharedPreferences.getString(pref_device_token);
   }
@@ -83,6 +83,18 @@ class Helper {
   static Future<String?> getVendorTheme() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     return sharedPreferences.getString(vendor_theme);
+  }
+
+
+  static Future<bool> saveApiKey(token) async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    return await sharedPreferences.setString(api_key, token);
+  }
+
+  // Read Data
+  static Future<String?> getApiKey() async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    return sharedPreferences.getString(api_key);
   }
 
 
@@ -231,16 +243,24 @@ class Helper {
   }
 
   static Future<void> clearAllSharedPreferences() async {
-    final prefs = await SharedPreferences.getInstance();
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     //await prefs.clear();
+    await sharedPreferences.remove(pref_token);
     await saveVendorData(VendorData());
     await saveProfileDetails(ProfileResponse());
-    await saveUserToken("");
     await saveBiometric(false);
-    await saveUserAuthenticated(false);
     //await saveUserDetails(null);
     await saveCountry("");
     await saveKycStatus("");
+    await setLocale("");
+    print('All shared preferences cleared');
+  }
+
+  static Future<void> clearAllSharedPreferencesForLogout() async {
+    final prefs = await SharedPreferences.getInstance();
+    //await prefs.clear();
+    await saveVendorData(VendorData());
+    await saveBiometric(false);
     await setLocale("");
     print('All shared preferences cleared');
   }

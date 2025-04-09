@@ -1,10 +1,10 @@
-package com.utell.chaatBar
+package com.thechaatbar
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 
 class MainActivity : FlutterFragmentActivity() {
 
-    /* private val CHANNEL = "com.utell.chaatBarCustomer/clover"
+    /* private val CHANNEL = "com.thechaatbarCustomer/clover"
 
      override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
          super.configureFlutterEngine(flutterEngine)

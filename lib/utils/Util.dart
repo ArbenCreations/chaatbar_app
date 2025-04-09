@@ -1,282 +1,207 @@
 import 'dart:io';
-
-import 'package:ChaatBar/utils/Helper.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
 import '../languageSection/Languages.dart';
 import '../view/component/toastMessage.dart';
 
+/// Validate password using regex pattern
 bool validatePassword(String password) {
-  // Regular expression pattern for password validation
-  String pattern =
-      r'^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$&*~]).{8,}$';
-
-  RegExp regExp = RegExp(pattern);
-  return regExp.hasMatch(password);
+  final pattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$&*~]).{8,}$';
+  return RegExp(pattern).hasMatch(password);
 }
 
+/// Extract first or last name from a full name
 String extractNames(String fullName, bool isFirst) {
-  // Trim any extra spaces and split by whitespace
-  List<String> nameParts = fullName.trim().split(' ');
-
-  // Default to an empty string if no name parts are available
-  String firstName = nameParts.isNotEmpty ? nameParts.first : '';
-  String lastName = nameParts.length > 1 ? nameParts.last : '';
-
-  if (isFirst) {
-    return firstName;
-  } else {
-    return lastName;
-  }
+  final nameParts = fullName.trim().split(' ');
+  return isFirst ? nameParts.first : nameParts.length > 1 ? nameParts.last : '';
 }
 
-
+/// Check if the keyboard is open
 bool isKeyboardOpen(BuildContext context) {
   return MediaQuery.of(context).viewInsets.bottom != 0;
 }
 
-
+/// Capitalize the first letter of a string
 String capitalizeFirstLetter(String input) {
-  if (input.isEmpty) {
-    return input;
-  }
-  if (input.contains("_")) {
-    var replacedInput = input.replaceAll("_", " ");
-    input = replacedInput;
-  }
-  return input[0].toUpperCase() + input.substring(1);
+  if (input.isEmpty) return input;
+  return input.contains("_")
+      ? input.replaceAll("_", " ")[0].toUpperCase() + input.substring(1)
+      : input[0].toUpperCase() + input.substring(1);
 }
 
+/// Convert string to lowercase
+String nonCapitalizeString(String input) => input.isEmpty ? input : input.toLowerCase();
 
-String nonCapitalizeString(String input) {
-  if (input.isEmpty) {
-    return input;
-  }
-  return input.toLowerCase();
-}
-
+/// Convert UTC date to local time and format as 'dd-MM-yyyy'
 String convertDateFormat(String input) {
-  if (input.isEmpty) {
-    return input;
-  }
-  String localTime = convertUtcDateToLocal(input);
-
-  DateTime parsedDate = DateTime.parse(localTime);
-  String formattedDate = DateFormat('dd-MM-yyyy').format(parsedDate);
-
-  return formattedDate;
+  if (input.isEmpty) return input;
+  return DateFormat('dd-MM-yyyy').format(DateTime.parse(convertUtcDateToLocal(input)));
 }
 
+/// Convert UTC time to local time
 String convertUtcDateToLocal(String utcTime) {
-  if (utcTime.isEmpty) {
-    return utcTime;
-  }
-  DateTime utcDateTime = DateTime.parse(utcTime);
-
-  // Convert the DateTime object to local time
-  DateTime localDateTime = utcDateTime.toLocal();
-
-  // Print the local time
- // print('Local Time: ${localDateTime.toString()}');
-
-  return "${localDateTime.toString()}";
+  return utcTime.isEmpty ? utcTime : DateTime.parse(utcTime).toLocal().toString();
 }
 
+/// Convert UTC date to local time and format as 'dd-MM-yyyy hh:mm a'
 String convertDateTimeFormat(String input) {
-  if (input.isEmpty) {
-    return input;
-  }
-  String localTime = convertUtcDateToLocal(input);
-
-  DateTime parsedDate = DateTime.parse(localTime);
-  String formattedDate = DateFormat('dd-MM-yyyy hh:mm a').format(parsedDate);
-
-  return formattedDate;
+  if (input.isEmpty) return input;
+  return DateFormat('dd-MM-yyyy hh:mm a').format(DateTime.parse(convertUtcDateToLocal(input)));
 }
 
+/// Format date in 'dd-MM-yyyy' format
+String convertedDateTimeFormat(String input) {
+  if (input.isEmpty) return input;
+  return DateFormat('dd-MM-yyyy').format(DateTime.parse(input).toLocal());
+}
+
+/// Format date in 'dd-MM-yyyy' format
+String convertedDateMonthFormat(String input) {
+  if (input.isEmpty) return input;
+  try {
+    DateTime date = DateTime.parse(input);
+    return DateFormat("MMM,dd yyyy").format(date);  // Output in 29Jan2025 format
+  } catch (e) {
+    return 'Invalid date format';
+  }
+}
+
+/// Convert UTC time to local time and format as 'hh:mm a'
 String convertTime(String input) {
-  if (input.isEmpty) {
-    return input;
-  }
-  String localTime = convertUtcDateToLocal(input);
-  DateTime date = DateTime.parse(localTime); // Example date and time
-  String formattedTime =
-      DateFormat('hh:mm a').format(date); // This will output "02:30 PM"
-  return formattedTime;
+  if (input.isEmpty) return input;
+  return DateFormat('hh:mm a').format(DateTime.parse(convertUtcDateToLocal(input)));
 }
 
+/// Format currency based on the country
 String currencyFormat(String symbol, String input, String country) {
-  if (input.isEmpty) {
-    return input;
-  }
-  double value = 0;
-  print(country);
-
-  var locale;
-
-  if (country == "India") {
-    locale = 'en_IN';
-  } else if (country == "Bangladesh") {
-    locale = 'bn_BD';
-  } else if (country == "Saudi Arabi") {
-    locale = 'ar_SA';
-  }
-  final formatter;
+  if (input.isEmpty) return input;
+  double value;
   try {
     value = double.parse(input);
   } catch (e) {
-    return "${symbol}${input}";
+    return "$symbol$input";
   }
-  if (country == "") {
-    formatter = NumberFormat.currency(
-      symbol: "${symbol}",
-      decimalDigits: 2,
-    );
-  } else {
-    formatter = NumberFormat.currency(
-      locale: locale,
-      symbol: "${symbol}",
-      decimalDigits: 2,
-    );
-  }
-  return "${formatter.format(value)}";
+  final locale = _getLocaleByCountry(country);
+  final formatter = NumberFormat.currency(
+    locale: locale,
+    symbol: symbol,
+    decimalDigits: 2,
+  );
+  return formatter.format(value);
 }
 
+/// Get locale based on the country
+String _getLocaleByCountry(String country) {
+  switch (country) {
+    case 'India':
+      return 'en_IN';
+    case 'Bangladesh':
+      return 'bn_BD';
+    case 'Saudi Arabi':
+      return 'ar_SA';
+    default:
+      return 'en_US';
+  }
+}
+
+/// Convert date to day and month format ('d\nMMM')
 String convertDateMonthFormat(String input) {
-  if (input.isEmpty) {
-    return input;
-  }
+  if (input.isEmpty) return input;
   DateTime date = DateTime.parse(input);
-  String day = DateFormat('d').format(date);
-  String month = DateFormat('MMM').format(date);
-  return '$day\n$month';
-  // return formattedDate;
+  return '${DateFormat('d').format(date)}\n${DateFormat('MMM').format(date)}';
 }
 
+/// Add currency symbol to the input amount
 String addCurrencySymbol(String? currencySymbol, String input) {
-  if (input.isEmpty) {
-    return input;
-  }else if(currencySymbol == null || currencySymbol == "null"){
-    return input;
-  }
-
-  if (input == "**") {
-    print("object");
-    return "${currencySymbol}${input}";
-  }
-  String amount = "";
+  if (input.isEmpty || currencySymbol == null || currencySymbol == "null") return input;
   try {
-    currencySymbol != null
-        ? amount =
-            "${currencySymbol}${double.parse("${input}").toStringAsFixed(2)}"
-        : "${double.parse("${input}").toStringAsFixed(2)}";
+    return "$currencySymbol${double.parse(input).toStringAsFixed(2)}";
   } catch (e) {
-    return "${currencySymbol}${input}";
+    return "$currencySymbol$input";
   }
-  print("${input == "**"}");
-  print("${input}");
-
-  return amount;
 }
 
+/// Check if balance is more than the amount
 bool isBalanceMoreThanAmount(String balance, String amt, BuildContext context) {
-  double intBalance = extractFloat(balance);
-  double inrAmt = amt != null || amt != "" ? extractFloat(amt) : 0;
-  if (intBalance <= inrAmt) {
-    ToastComponent.showToast(
-        context: context, message: 'You do not have enough balance.');
+  if (extractFloat(balance) <= extractFloat(amt)) {
+    CustomToast.showToast(context: context, message: 'You do not have enough balance.');
     return false;
-  } else {
-    return true;
   }
+  return true;
 }
 
+/// Extract float value from a string
 double extractFloat(String str) {
-  // Regular expression to match floating-point numbers, including those with decimals and negative sign
   final regex = RegExp(r'-?\d+(\.\d+)?');
   final match = regex.firstMatch(str);
-  if (match != null) {
-    return double.parse(match.group(0)!);
-  } else {
-    throw FormatException('No floating-point number found in the string');
-  }
+  if (match != null) return double.parse(match.group(0)!);
+  throw FormatException('No floating-point number found in the string');
 }
 
-bool checkMoneyOut(String transactionType, int? senderId, int? userId){
-
-  if(nonCapitalizeString(transactionType) == nonCapitalizeString("transfer")){
-    if(userId !=0) {
-      if (userId == senderId) {
-        return true;
-      }
-      else {
-        return false;
-      }
-    }else
-      return false;
-  }else if(nonCapitalizeString(transactionType) == nonCapitalizeString("withdraw")){
-    return true;
-  }else{
-    return false;
+/// Check if the transaction allows money to be withdrawn or transferred
+bool checkMoneyOut(String transactionType, int? senderId, int? userId) {
+  if (transactionType.toLowerCase() == 'transfer' && userId != 0) {
+    return senderId == userId;
   }
-
+  return transactionType.toLowerCase() == 'withdraw';
 }
 
-String addCurrencySymbolTransaction(
-    String? currencySymbol, String input, String requestType, int? userId, int? senderId) {
-  if (input.isEmpty) {
-    return input;
-  }
-  String amount = "";
-  currencySymbol != null
-      ? amount =
-          "${currencySymbol}${double.parse("${input}").toStringAsFixed(2)}"
-      : "${double.parse("${input}").toStringAsFixed(2)}";
+/// Add currency symbol based on transaction type
+String addCurrencySymbolTransaction(String? currencySymbol, String input, String requestType, int? userId, int? senderId) {
+  if (input.isEmpty) return input;
+  String amount = addCurrencySymbol(currencySymbol, input);
   if (checkMoneyOut(requestType, senderId, userId)) {
     amount = "-$amount";
-  } else/* if (requestType == "Withdraw")*/ {
+  } else {
     amount = "+$amount";
-  } /*else if (requestType == "Transfer") {
-    amount = "-$amount";
-  } else if (requestType == "In complete") {
-    amount = "-$amount";
-  }*/
+  }
   return amount;
 }
 
-colorStatus(String status, BuildContext context) {
-  Color color = Colors.black;
-  if (status == Languages.of(context)!.labelPending) {
-    color = Colors.orange;
-  } else if (status == Languages.of(context)!.labelSuccess) {
-    color = Colors.green;
-  } else if (status == Languages.of(context)!.labelRejected) {
-    color = Colors.red;
-  } else if (status == Languages.of(context)!.labelInComplete) {
-    color = Colors.red;
-  }
-  return color;
+/// Determine the color for transaction status
+Color colorStatus(String status, BuildContext context) {
+  if (status == Languages.of(context)!.labelPending) return Colors.orange;
+  if (status == Languages.of(context)!.labelSuccess) return Colors.green;
+  return status == Languages.of(context)!.labelRejected || status == Languages.of(context)!.labelInComplete
+      ? Colors.red
+      : Colors.black;
 }
 
-
+/// Hide the keyboard
 void hideKeyBoard() {
   FocusManager.instance.primaryFocus?.unfocus();
 }
 
+/// Get the unique device ID based on platform (Android or iOS)
 Future<String?> getDeviceId() async {
   DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
   if (Platform.isAndroid) {
-    AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-    return androidInfo.id; // This is the unique ID on Android devices
+    final androidInfo = await deviceInfo.androidInfo;
+    return androidInfo.id;
   } else if (Platform.isIOS) {
-    IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
-    return iosInfo.identifierForVendor; // This is the unique ID on iOS devices
+    final iosInfo = await deviceInfo.iosInfo;
+    return iosInfo.identifierForVendor;
   }
   return null;
 }
 
 
+
+bool hasMinLength(String value) {
+  return value.length >= 8;
+}
+
+bool hasUppercase(String value) {
+  return value.contains(RegExp(r'[A-Z]'));
+}
+
+bool hasDigit(String value) {
+  return value.contains(RegExp(r'\d'));
+}
+
+bool hasSpecialCharacter(String value) {
+  return value.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
+}
 
 

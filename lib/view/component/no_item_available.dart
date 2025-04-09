@@ -10,7 +10,7 @@ class NoItemAvailable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
+    double mediaWidth = MediaQuery.of(context).size.width;
     bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Container(
       height: screenHeight * 0.55,

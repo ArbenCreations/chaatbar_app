@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../theme/AppColor.dart';
+import '../../theme/CustomAppColor.dart';
 
 class ShimmerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
+    double mediaWidth = MediaQuery.of(context).size.width;
     bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      width: screenWidth,
+      width: mediaWidth,
       height: 80,
       child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -54,9 +54,9 @@ class ShimmerCard extends StatelessWidget {
                         child: CircleAvatar(
                           radius: 30,
                           backgroundColor:
-                          AppColor.WHITE,
+                          Colors.white,
                           backgroundImage: AssetImage(
-                              "assets/pizza_image.jpg"),
+                              "assets/appLogo.png"),
                         ),
                       ),
                       SizedBox(

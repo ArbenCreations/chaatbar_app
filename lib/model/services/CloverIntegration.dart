@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 
 class CloverIntegration {
-  static const platform = MethodChannel('com.utell.chaatBarCustomer/clover');
+  static const platform = MethodChannel('com.thechaatbarCustomer/clover');
 
   Future<void> startTransaction() async {
     try {

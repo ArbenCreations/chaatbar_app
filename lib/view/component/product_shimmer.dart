@@ -4,10 +4,10 @@ import 'package:shimmer/shimmer.dart';
 class ProductShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
+    double mediaWidth = MediaQuery.of(context).size.width;
     bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      width: screenWidth,
+      width: mediaWidth,
       child: Container(
         child: GridView.builder(
           physics: const AlwaysScrollableScrollPhysics(),

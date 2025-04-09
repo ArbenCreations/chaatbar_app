@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../model/response/rf_bite/categoryListResponse.dart';
-import '../../theme/AppColor.dart';
+import '../../model/response/categoryListResponse.dart';
+import '../../theme/CustomAppColor.dart';
 import '../../utils/Util.dart';
 
 class CategoryProductList extends StatelessWidget {
   final bool isLoading;
   final List<CategoryData?> categories;
-  final double screenWidth;
+  final double mediaWidth;
   final double screenHeight;
   final Color primaryColor;
   final Function(int) onProductTap;
@@ -17,7 +17,7 @@ class CategoryProductList extends StatelessWidget {
     Key? key,
     required this.isLoading,
     required this.categories,
-    required this.screenWidth,
+    required this.mediaWidth,
     required this.screenHeight,
     required this.primaryColor,
     required this.onProductTap,
@@ -58,9 +58,9 @@ class CategoryProductList extends StatelessWidget {
                             width: 50,
                             child: CircleAvatar(
                               radius: 30,
-                              backgroundColor: AppColor.WHITE,
+                              backgroundColor: Colors.white,
                               backgroundImage:
-                                  AssetImage("assets/pizza_image.jpg"),
+                                  AssetImage("assets/appLogo.png"),
                             ),
                           )
                         : Container(
@@ -85,9 +85,9 @@ class CategoryProductList extends StatelessWidget {
                                     width: 50,
                                     child: CircleAvatar(
                                       radius: 30,
-                                      backgroundColor: AppColor.WHITE,
+                                      backgroundColor: Colors.white,
                                       backgroundImage: AssetImage(
-                                        "assets/pizza_image.jpg",
+                                        "assets/appLogo.png",
                                       ),
                                     ),
                                   );

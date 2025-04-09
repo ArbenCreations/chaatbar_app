@@ -2,7 +2,7 @@ import 'Languages.dart';
 
 class LanguageEn extends Languages {
   @override
-  String get appName => "ChaatBar-Customer";
+  String get appName => "TheChaatBar-Customer";
 
   @override
   String get labelWelcome => "Welcome";
@@ -23,7 +23,7 @@ class LanguageEn extends Languages {
   String get labelAddMoney => "Add Money";
 
   @override
-  String get labelAddedCard => "Add Card";
+  String get labelAddedCard => "Enter Card Details";
 
   @override
   String get labelAlmostFinish => "Almost Finish";
@@ -194,7 +194,7 @@ class LanguageEn extends Languages {
       "Your Email has been successfully verified.";
 
   @override
-  String get labelForgotPass => "Forgot Password";
+  String get labelForgotPass => "Forgot your Password";
 
   @override
   String get labelIndia => "India";
@@ -437,6 +437,9 @@ class LanguageEn extends Languages {
 
   @override
   String get labelInvalidAccessToken => "Invalid access token";
+
+  @override
+  String get labelInvalidAccessToken1 => "Invalid access token1";
 
   @override
   String get labelKycNonVerified => "KYC NON-VERIFIED";
@@ -782,5 +785,8 @@ class LanguageEn extends Languages {
 
   @override
   String get labelWithdrawOtp => "Withdraw Otp";
+
+  @override
+  String get labelDeleteAccount => "Delete Account";
 
 }

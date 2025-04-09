@@ -14,14 +14,9 @@ class CustomerOtpVerify {
   String phoneNumber;
   String mobileOtp;
 
-  CustomerOtpVerify(
-      {required this.phoneNumber,
-        required this.mobileOtp});
+  CustomerOtpVerify({required this.phoneNumber, required this.mobileOtp});
 
   Map<String, dynamic> toJson() {
-    return {
-      'phone_number': phoneNumber,
-      'mobile_otp': mobileOtp
-    };
+    return {'phone_number': phoneNumber, 'mobile_otp': mobileOtp};
   }
 }

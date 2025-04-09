@@ -1,0 +1,6 @@
+framework module flutter_broadcasts {
+  umbrella header "flutter_broadcasts-umbrella.h"
+
+  export *
+  module * { export * }
+}

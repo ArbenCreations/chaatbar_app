@@ -1,37 +1,8 @@
-
-import 'package:ChaatBar/model/request/verifyOtpChangePass.dart';
-import 'package:ChaatBar/model/response/rf_bite/createOrderResponse.dart';
-import 'package:ChaatBar/model/response/rf_bite/productListResponse.dart';
-import 'package:ChaatBar/model/response/rf_bite/successCallbackResponse.dart';
-import 'package:ChaatBar/model/response/rf_bite/vendorListResponse.dart';
-import 'package:ChaatBar/theme/AppTheme.dart';
-import 'package:ChaatBar/utils/Helper.dart';
-import 'package:ChaatBar/view/component/my_navigator_observer.dart';
-import 'package:ChaatBar/view/component/toastMessage.dart';
-import 'package:ChaatBar/view/screens/ChaatBar/active_upcoming_screen.dart';
-import 'package:ChaatBar/view/screens/ChaatBar/add_card_screen.dart';
-import 'package:ChaatBar/view/screens/ChaatBar/authenticationSection/splash_screen.dart';
-import 'package:ChaatBar/view/screens/ChaatBar/cart_screen.dart';
-import 'package:ChaatBar/view/screens/ChaatBar/choose_locality_screen.dart';
-import 'package:ChaatBar/view/screens/ChaatBar/edit_info_screen.dart';
-import 'package:ChaatBar/view/screens/ChaatBar/menu_screen.dart';
-import 'package:ChaatBar/view/screens/ChaatBar/dashboard_screen.dart';
-import 'package:ChaatBar/view/screens/ChaatBar/order_detail_screen.dart';
-import 'package:ChaatBar/view/screens/ChaatBar/order_overview_screen.dart';
-import 'package:ChaatBar/view/screens/ChaatBar/order_successful_screen.dart';
-import 'package:ChaatBar/view/screens/ChaatBar/product_detail_screen.dart';
-import 'package:ChaatBar/view/screens/ChaatBar/authenticationSection/signin_screen.dart';
-import 'package:ChaatBar/view/screens/ChaatBar/profile_screen.dart';
-import 'package:ChaatBar/view/screens/ChaatBar/vendor_location_screen.dart';
-import 'package:ChaatBar/view/screens/ChaatBar/vendor_screen.dart';
-import 'package:ChaatBar/view/screens/ChaatBar/authenticationSection/sign_up_screen.dart';
-import 'package:ChaatBar/view/screens/ChaatBar/authenticationSection/otp_verify_screen.dart';
-import 'package:ChaatBar/view/screens/ChaatBar/authenticationSection/forgot_password_screen.dart';
-import 'package:ChaatBar/view/screens/ChaatBar/authenticationSection/new_forgot_pass_screen.dart';
-import 'package:ChaatBar/view/screens/ChaatBar/authenticationSection/otp_forgot_pass_screen.dart';
-import 'package:ChaatBar/view/screens/ChaatBar/bottom_nav.dart';
-import 'package:ChaatBar/view/screens/coming_soon_screen.dart';
-import 'package:ChaatBar/view_model/main_view_model.dart';
+import 'package:TheChaatBar/utils/Helper.dart';
+import 'package:TheChaatBar/view/screens/authentication/forgotPassword/changePasswordScreen.dart';
+import 'package:TheChaatBar/view/screens/authentication/forgotPassword/forgotPasswordScreen.dart';
+import 'package:TheChaatBar/view/screens/authentication/welcomeScreen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -42,10 +13,42 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import 'languageSection/AppLocalizationsDelegate.dart';
-import 'languageSection/L10n.dart';
+import 'languageSection/LanguageList.dart';
+import 'model/request/verifyOtpChangePass.dart';
+import 'model/response/createOrderResponse.dart';
 import 'model/response/notificationOtpResponse.dart';
+import 'model/response/productListResponse.dart';
+import 'model/response/successCallbackResponse.dart';
+import 'model/response/vendorListResponse.dart';
+import 'model/services/AuthenticationProvider.dart';
 import 'model/services/PushNotificationService.dart';
-
+import 'model/viewModel/mainViewModel.dart';
+import 'theme/CustomAppColor.dart';
+import 'theme/CustomAppTheme.dart';
+import 'view/component/my_navigator_observer.dart';
+import 'view/component/toastMessage.dart';
+import 'view/screens/authentication/forgotPassword/otp_forgot_pass_screen.dart';
+import 'view/screens/authentication/loginScreen.dart';
+import 'view/screens/authentication/otpVerifyScreen.dart';
+import 'view/screens/authentication/registerScreen.dart';
+import 'view/screens/authentication/splashScreen.dart';
+import 'view/screens/bottomNavigation.dart';
+import 'view/screens/choose_locality_screen.dart';
+import 'view/screens/homeScreen.dart';
+import 'view/screens/order/cartScreen.dart';
+import 'view/screens/order/coupons_screen.dart';
+import 'view/screens/order/itemDetailScreen.dart';
+import 'view/screens/order/itemOverviewScreen.dart';
+import 'view/screens/order/menuScreen.dart';
+import 'view/screens/order/paymentCardScreen.dart';
+import 'view/screens/order/paymentSuccessfulScreen.dart';
+import 'view/screens/order/product_detail_screen.dart';
+import 'view/screens/orderHistory/activeOrdersScreen.dart';
+import 'view/screens/porfile/edit_info_screen.dart';
+import 'view/screens/porfile/edit_profile_screen.dart';
+import 'view/screens/porfile/profile_screen.dart';
+import 'view/screens/vendor_screen.dart';
+import 'view/screens/vendorsListScreen.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -88,7 +91,7 @@ late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
+  //Initialize Firebase
   await Firebase.initializeApp();
 
   // Handle background messages
@@ -103,17 +106,17 @@ void main() async {
     await Permission.notification.request();
   }
 
+  var retrievedToken = await Helper.getUserToken();
   // Get initial message
-  RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+  RemoteMessage? initialMessage =
+      await FirebaseMessaging.instance.getInitialMessage();
   if (initialMessage != null) {
     print("FirebaseMessaging:: $initialMessage");
   }
 
   // Set preferred orientations and run app
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown
-  ]);
+  await SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
   runApp(MyApp(initialMessage: null));
 }
@@ -134,6 +137,7 @@ class _MyAppState extends State<MyApp> {
   final RemoteMessage? initialMessage;
 
   ThemeMode _themeMode = ThemeMode.system;
+
   _MyAppState(this.initialMessage);
 
   @override
@@ -156,10 +160,11 @@ class _MyAppState extends State<MyApp> {
 
   void setupNotificationHandlers(BuildContext context) {
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      ToastComponent.showToast(context: context, message: "$message");
+      CustomToast.showToast(context: context, message: "$message");
       // Navigate to the ProfileScreen when the notification is clicked
-      final notificationResponse = NotificationOtpResponse.fromJson(message.data);
-     /* Navigator.push(
+      final notificationResponse =
+          NotificationOtpResponse.fromJson(message.data);
+      /* Navigator.push(
         navigatorKey.currentState!.context,
         MaterialPageRoute(
             builder: (context) => NotificationOtpScreen(
@@ -169,26 +174,33 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: AppColor.AppBar,
+      statusBarIconBrightness: Brightness.light,
+      statusBarBrightness: Brightness.light,
+    ));
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider.value(value: MainViewModel()),
+        Provider<FirebaseAuth>(
+          create: (_) => FirebaseAuth.instance,
+        ),
+        ChangeNotifierProvider<AuthenticationProvider>(
+          create: (context) =>
+              AuthenticationProvider(context.read<FirebaseAuth>()),
+        ),
+        ChangeNotifierProvider(create: (context) => MainViewModel()),
       ],
       child: MaterialApp(
-        navigatorObservers: [MyNavigatorObserver()],
+          navigatorObservers: [MyNavigatorObserver()],
           debugShowCheckedModeBanner: false,
           navigatorKey: navigatorKey,
-          title: 'Chaat-Bar',
+          title: 'Chaat_Bar',
           locale: _locale,
           localizationsDelegates: [
             GlobalMaterialLocalizations.delegate,
-            // support localization string for Material Widget
             GlobalCupertinoLocalizations.delegate,
-            // support localization string for Cupertino Widget
-            GlobalWidgetsLocalizations.delegate,
-            // support localization string for text format from right to left.
             AppLocalizationsDelegate()
           ],
           onGenerateRoute: (settings) {
@@ -197,119 +209,102 @@ class _MyAppState extends State<MyApp> {
             }
             return null;
           },
-          supportedLocales: L10n.all,
+          supportedLocales: LanguageList.all,
           theme: AppTheme.getAppTheme(),
-          themeMode: _themeMode,
-          darkTheme: AppTheme.getDarkTheme(),
           initialRoute: '/',
           routes: {
             '/': (context) {
-              NotificationOtpResponse? notificationResponse = NotificationOtpResponse(otp: "", notificationType: "");
-              if(initialMessage?.data != null){
-                notificationResponse = NotificationOtpResponse.fromJson(initialMessage!.data);
+              NotificationOtpResponse? notificationResponse =
+                  NotificationOtpResponse(otp: "", notificationType: "");
+              if (initialMessage?.data != null) {
+                notificationResponse =
+                    NotificationOtpResponse.fromJson(initialMessage!.data);
               }
-              return /*SigninScreen();*/SplashScreen(data : notificationResponse);
-            },
-            '/SignInScreen': (context) {
-              return SigninScreen();
+              return SplashScreen(data: notificationResponse);
             },
             '/ChooseLocalityScreen': (context) {
               final args =
-              ModalRoute.of(context)!.settings.arguments as String?;
-              return ChooseLocalityScreen(data: args,);
+                  ModalRoute.of(context)?.settings.arguments as String?;
+              return ChooseLocalityScreen(
+                data: args ?? '',
+              );
             },
-            '/VendorLocationScreen': (context) {
-              final args =
-              ModalRoute.of(context)!.settings.arguments as String?;
-              return VendorLocationScreen(data: args,);
-            },
-            '/ActiveOrUpcomingScreen': (context) {
-              return ActiveOrUpcomingScreen();
-            },
-            '/VendorScreen': (context) {
-              return VendorScreen();
-            },
-            '/DashboardScreen': (context) {
-              return DashboardScreen();
-            },
+            '/VendorsListScreen': (context) => VendorsListScreen(),
+            '/LoginScreen': (context) => LoginScreen(),
+            '/ActiveOrdersScreen': (context) => ActiveOrdersScreen(),
+            '/VendorScreen': (context) => VendorScreen(),
+            '/HomeScreen': (context) => HomeScreen(),
+            '/BottomNavigation': (context) =>
+                BottomNavigation(onThemeChanged: _toggleTheme),
+            '/RegisterScreen': (context) => RegisterScreen(),
+            '/EditProfileScreen': (context) => EditProfileScreen(),
+            '/CouponsScreen': (context) => CouponsScreen(),
+            '/EditInformationScreen': (context) => EditInformationScreen(),
+            '/ForgotPasswordScreen': (context) => ForgotPasswordScreen(),
+            '/WelcomeScreen': (context) => WelcomeScreen(),
+            '/ProfileScreen': (context) => ProfileScreen(
+                  onThemeChanged: _toggleTheme,
+                ),
             '/CartScreen': (context) {
-              final args =
-                  ModalRoute.of(context)!.settings.arguments as String;
-              return CartScreen(theme: args,);
+              return CartScreen();
             },
             '/ProductDetailScreen': (context) {
               final args =
                   ModalRoute.of(context)!.settings.arguments as ProductData;
-              return ProductDetailScreen(data: args,);
+              return ProductDetailScreen(
+                data: args,
+              );
             },
             '/MenuScreen': (context) {
               final args =
                   ModalRoute.of(context)!.settings.arguments as VendorData;
-              return MenuScreen(data: args,);
-            },
-            '/ProfileScreen': (context) {
-              return ProfileScreen(onThemeChanged : _toggleTheme,);
-            },
-            '/BottomNav': (context) {
-              return BottomNav(
-                  onThemeChanged : _toggleTheme);
-            },
-            '/SignUpScreen': (context) {
-
-              return SignUpScreen();
+              return MenuScreen(
+                data: args,
+              );
             },
             '/OTPVerifyScreen': (context) {
               final args =
-              ModalRoute.of(context)!.settings.arguments as String?;
-              return OTPVerifyScreen(data: args,);
+                  ModalRoute.of(context)!.settings.arguments as String?;
+              return OTPVerifyScreen(
+                data: args,
+              );
             },
-            '/OrderSuccessfulScreen': (context) {
+            '/PaymentSuccessfulScreen': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments
+                  as SuccessCallbackResponse?;
+              return PaymentSuccessfulScreen(data: args);
+            },
+            '/ItemOverviewScreen': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments
+                  as CreateOrderResponse?;
+              return ItemOverviewScreen(data: args);
+            },
+            '/ItemDetailScreen': (context) {
               final args =
-              ModalRoute.of(context)!.settings.arguments as SuccessCallbackResponse?;
-              return OrderSuccessfulScreen(data: args);
-            },
-            '/OrderOverviewScreen': (context) {
-              final args =
-              ModalRoute.of(context)!.settings.arguments as CreateOrderResponse?;
-              return OrderOverviewScreen(data: args);
-            },
-            '/EditInformationScreen': (context) {
-              return EditInformationScreen();
-            },
-            '/OrderDetailScreen': (context) {
-              final args =
-              ModalRoute.of(context)!.settings.arguments as OrderDetails;
-              return OrderDetailScreen(order: args);
-            },
-            '/ForgotPasswordScreen': (context) {
-              return ForgotPasswordScreen();
+                  ModalRoute.of(context)!.settings.arguments as OrderDetails;
+              return ItemDetailScreen(order: args);
             },
             '/OtpForgotPassScreen': (context) {
-              final args = ModalRoute.of(context)!.settings.arguments
-                  as String?;
+              final args =
+                  ModalRoute.of(context)!.settings.arguments as String?;
               return OtpForgotPassScreen(data: args);
             },
-            '/NewPassForgotPassScreen': (context) {
+            '/ChangePasswordScreen': (context) {
               final args = ModalRoute.of(context)!.settings.arguments
                   as VerifyOtChangePassRequest?;
-              return NewPassForgotPassScreen(data: args);
+              return ChangePasswordScreen(data: args);
             },
-            '/AddCardScreen': (context) {
+            '/PaymentCardScreen': (context) {
               final args = ModalRoute.of(context)!.settings.arguments
-                  as Map<String,dynamic>?;
-              return AddCardScreen(data: args?['data'] as String?,
-                orderData: args?['orderData'] as CreateOrderResponse,);
+                  as Map<String, dynamic>?;
+              return PaymentCardScreen(
+                data: args?['data'] as String?,
+                orderData: args?['orderData'] as CreateOrderResponse,
+              );
             },
-            '/ComingSoonScreen': (context) {
-              return ComingSoonScreen();
-            },
-
-
           }),
-
     );
   }
-
 
   void _fetchData() async {
     await Future.delayed(Duration(milliseconds: 2));
@@ -318,18 +313,18 @@ class _MyAppState extends State<MyApp> {
     print(selectedLanguage.languageCode);
     Helper.getAppThemeMode().then((appTheme) {
       setState(() {
-        selectedAppTheme = "$appTheme" != "null" ? "$appTheme" : selectedAppTheme;
+        selectedAppTheme =
+            "$appTheme" != "null" ? "$appTheme" : selectedAppTheme;
         _appTheme = '$selectedAppTheme';
 
-        if("$_appTheme" == "Default") {
+        if ("$_appTheme" == "Default") {
           print("value $_appTheme");
           _toggleTheme(ThemeMode.system);
-        }else if("$_appTheme" == "Light")
-        {
+        } else if ("$_appTheme" == "Light") {
           _toggleTheme(ThemeMode.light);
-        }else if("$_appTheme" == "Dark"){
+        } else if ("$_appTheme" == "Dark") {
           _toggleTheme(ThemeMode.dark);
-        } else{
+        } else {
           _toggleTheme(ThemeMode.light);
         }
       });
@@ -344,14 +339,15 @@ class _MyAppState extends State<MyApp> {
 
   Route _createPopupRoute() {
     return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => CartScreen(theme: '',),
+      pageBuilder: (context, animation, secondaryAnimation) => CartScreen(),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         // Scale transition for pop-up effect
         const begin = 0.0;
         const end = 1.0;
         const curve = Curves.easeInOut;
 
-        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+        var tween =
+            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
         return ScaleTransition(
           scale: animation.drive(tween),

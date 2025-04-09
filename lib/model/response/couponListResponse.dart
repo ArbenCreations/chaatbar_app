@@ -1,32 +1,27 @@
-
-
-import 'package:ChaatBar/model/response/rf_bite/getCouponDetailsResponse.dart';
-
 class CouponListResponse {
   List<PrivateCouponDetailsResponse>? couponsResponse;
-  String message;
-  int status;
+  String? message;
+  int? status;
 
   CouponListResponse({
-    required this.couponsResponse,
-    required this.message,
-    required this.status,
+    this.couponsResponse,
+    this.message,
+    this.status,
   });
 
   factory CouponListResponse.fromJson(Map<String, dynamic> json) {
     var list = json['data'] as List;
 
-    List<PrivateCouponDetailsResponse>? couponResponseList =
-        list.map((i) => PrivateCouponDetailsResponse.fromJson(i)).toList();
+    List<PrivateCouponDetailsResponse> couponResponseList =
+    list.map((i) => PrivateCouponDetailsResponse.fromJson(i)).toList();
 
     return CouponListResponse(
       couponsResponse: couponResponseList,
-      message: json["message"] as String,
-      status: json["status"] as int,
+      message: json["message"] as String?,
+      status: json["status"] as int?,
     );
   }
 }
-
 
 class PrivateCouponDetailsResponse {
   int? discount;
@@ -36,12 +31,14 @@ class PrivateCouponDetailsResponse {
   String? minCartAmt;
   bool? maxDisStatus;
   bool? minCartAmountStatus;
-  String? createdAt;
-  String? updatedAt;
+  DateTime? createdAt;  // Change String to DateTime
+  DateTime? updatedAt;  // Change String to DateTime
   String? description;
   String? couponCode;
-  String? expire_at;
-  String? coupon_type;
+  DateTime? expireAt;  // Change String to DateTime
+  String? couponType;
+  int? vendorId;
+  int? customerId;
 
   PrivateCouponDetailsResponse({
     this.discount,
@@ -55,26 +52,41 @@ class PrivateCouponDetailsResponse {
     this.maxDisStatus,
     this.minCartAmountStatus,
     this.minCartAmt,
-    this.expire_at,
-    this.coupon_type,
+    this.expireAt,
+    this.couponType,
+    this.customerId,
+    this.vendorId,
   });
 
   factory PrivateCouponDetailsResponse.fromJson(Map<String, dynamic> json) {
     return PrivateCouponDetailsResponse(
-      discount:json["discount"] as int?,
+      discount: json["discount"] as int?,
       id: json["id"] as int?,
       minCartAmt: json["min_cart_amount"] as String?,
       maxCouponUse: json["max_coupon_use"] as int?,
       maxDiscountAmt: json["max_discount_amount"] as String?,
       minCartAmountStatus: json["min_cart_amount_status"] as bool?,
       maxDisStatus: json["max_dis_status"] as bool?,
-      updatedAt: json["updated_at"] as String?,
-      createdAt: json["created_at"] as String?,
-      expire_at: json["expire_at"] as String?,
+      updatedAt: _parseDate(json["updated_at"]),
+      createdAt: _parseDate(json["created_at"]),
+      expireAt: _parseDate(json["expire_at"]), // Add this for the expire_at field
       description: json["description"] as String?,
-      coupon_type: json["coupon_type"] as String?,
+      couponType: json["coupon_type"] as String?,
       couponCode: json["coupon_code"] as String?,
+      customerId: json["customer_id"] == null ? null : json["customer_id"] as int?,
+      vendorId: json["vendor_id"] as int?,
     );
+  }
 
+  // Helper function to parse DateTime from ISO 8601 string
+  static DateTime? _parseDate(String? dateString) {
+    if (dateString == null) return null;
+    try {
+      return DateTime.parse(dateString); // Parse ISO 8601 format date
+    } catch (e) {
+      print("Error parsing date: $e");
+      return null;
+    }
   }
 }
+

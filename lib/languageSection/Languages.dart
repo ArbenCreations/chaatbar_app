@@ -311,6 +311,8 @@ abstract class Languages {
 
   String get labelInvalidAccessToken;
 
+  String get labelInvalidAccessToken1;
+
   String get labelAdd;
 
   String get statusVerified;
@@ -425,7 +427,7 @@ abstract class Languages {
 
   String get labelAt;
 
-  String get labelTransactionId ;
+  String get labelTransactionId;
 
   String get labelShareScreenshot;
 
@@ -519,6 +521,5 @@ abstract class Languages {
 
   String get labelWithdrawOtp;
 
-
-
+  String get labelDeleteAccount;
 }

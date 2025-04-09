@@ -1,26 +1,102 @@
 {
   "project_info": {
-    "project_number": "760585093843",
-    "project_id": "chaatbar-e3f66",
-    "storage_bucket": "chaatbar-e3f66.firebasestorage.app"
+    "project_number": "392260348497",
+    "project_id": "chaatbar-isek",
+    "storage_bucket": "chaatbar-isek.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:760585093843:android:d740d1c5221afb25b9ca26",
+        "mobilesdk_app_id": "1:392260348497:android:f71c81eab6a7247ba5e670",
         "android_client_info": {
-          "package_name": "com.utell.chaatBar"
+          "package_name": "com.chaatbar"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "392260348497-6qbojjst4s120fila31flpshoqoao9o6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.chaatbar",
+            "certificate_hash": "bdcda9e6c1f105b0cf14a2197c3bd86ac55285e2"
+          }
+        },
+        {
+          "client_id": "392260348497-snldf8mpvhbunbt5mbv0gp2cjt25cfc0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyC5UcoXn0Rkr6crm3jALv4dz4Nyj-PXLPo"
+          "current_key": "AIzaSyD8GNVzqP4xyT4WMQqxGNcUivygyfmvZFs"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "392260348497-snldf8mpvhbunbt5mbv0gp2cjt25cfc0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:392260348497:android:2f3e139be7a3ba06a5e670",
+        "android_client_info": {
+          "package_name": "com.chaatbar.restaurant"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "392260348497-snldf8mpvhbunbt5mbv0gp2cjt25cfc0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8GNVzqP4xyT4WMQqxGNcUivygyfmvZFs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "392260348497-snldf8mpvhbunbt5mbv0gp2cjt25cfc0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:392260348497:android:08d61ab774b6a6f5a5e670",
+        "android_client_info": {
+          "package_name": "com.thechaatbar"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "392260348497-snldf8mpvhbunbt5mbv0gp2cjt25cfc0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8GNVzqP4xyT4WMQqxGNcUivygyfmvZFs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "392260348497-snldf8mpvhbunbt5mbv0gp2cjt25cfc0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

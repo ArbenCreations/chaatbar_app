@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../theme/AppColor.dart';
+import '../../theme/CustomAppColor.dart';
 
 class CircularProfileImage extends StatelessWidget {
   late final String? imageUrl;
@@ -31,14 +31,14 @@ class CircularProfileImage extends StatelessWidget {
                 width: size, // Width of the round image
                 height: size, // Height of the round image
                 decoration: BoxDecoration(
-                  color: AppColor.PRIMARY, // Background color
+                  color: Colors.white, // Background color
                   shape: BoxShape.circle, // Make it circular
                 ),
                 child: Center(
                   child: Text(
                     initial,
                     style: TextStyle(
-                      color: Colors.white,
+                      color: AppColor.Primary,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
@@ -51,18 +51,18 @@ class CircularProfileImage extends StatelessWidget {
                 child: CircleAvatar(
                   radius: 30,
                   backgroundColor:
-                      isDarkMode ? AppColor.DARK_CARD_COLOR : AppColor.WHITE,
+                      isDarkMode ? AppColor.CardDarkColor : Colors.white,
                   backgroundImage: AssetImage(placeholderImage),
                 ),
               )
         : Container(
-            margin: EdgeInsets.only(top: size == 35 ?0 : 3),
+            margin: EdgeInsets.only(top: size == 35 ?0 : 0),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(100),
+              borderRadius: BorderRadius.circular(40),
               color: Colors.white,
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(100.0),
+              borderRadius: BorderRadius.circular(40.0),
               child: Image.network(
                 imageUrl ?? "",
                 height: size,
@@ -95,8 +95,8 @@ class CircularProfileImage extends StatelessWidget {
                           child: CircleAvatar(
                             radius: 30,
                             backgroundColor: isDarkMode
-                                ? AppColor.DARK_CARD_COLOR
-                                : AppColor.WHITE,
+                                ? AppColor.CardDarkColor
+                                : Colors.white,
                             backgroundImage: AssetImage(
                               placeholderImage,
                             ),
@@ -115,7 +115,7 @@ class CircularProfileImage extends StatelessWidget {
                         height: size,
                         width: size,
                         color: isDarkMode
-                            ? AppColor.DARK_CARD_COLOR
+                            ? AppColor.CardDarkColor
                             : Colors.white,
                       ),
                     );

@@ -20,7 +20,7 @@ class SessionExpiredDialog{
               child: Text('Yes'),
               onPressed: () {
                 Helper.clearAllSharedPreferences();
-                Navigator.pushReplacementNamed(context, '/SignInScreen',
+                Navigator.pushReplacementNamed(context, '/LoginScreen',
                     arguments: "");
               },
             ),

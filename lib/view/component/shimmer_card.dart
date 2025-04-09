@@ -4,10 +4,10 @@ import 'package:shimmer/shimmer.dart';
 class ShimmerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
+    double mediaWidth = MediaQuery.of(context).size.width;
     bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      width: screenWidth,
+      width: mediaWidth,
       height: 80,
       child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -24,7 +24,7 @@ class ShimmerCard extends StatelessWidget {
               highlightColor:isDarkMode? Colors.grey[700]!: Colors.grey[100]!,
               child: Container(
                 margin: EdgeInsets.symmetric(vertical: 4),
-                width: screenWidth / 1.7,
+                width: mediaWidth / 1.7,
                 child: Card(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0)),

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../model/response/rf_bite/productListResponse.dart';
-import '../../theme/AppColor.dart';
+import '../../model/response/productListResponse.dart';
+import '../../theme/CustomAppColor.dart';
 import '../../utils/Util.dart';
 
 class ProductComponent extends StatelessWidget {
   final ProductData item;
-  final double screenWidth;
+  final double mediaWidth;
   final bool isDarkMode;
   final double screenHeight;
   final Color primaryColor;
@@ -20,7 +20,7 @@ class ProductComponent extends StatelessWidget {
   const ProductComponent({
     Key? key,
     required this.item,
-    required this.screenWidth,
+    required this.mediaWidth,
     required this.isDarkMode,
     required this.screenHeight,
     required this.onAddTap,
@@ -38,20 +38,31 @@ class ProductComponent extends StatelessWidget {
         Navigator.pushNamed(context, "/ProductDetailScreen", arguments: item);
       },
       child: Container(
-        width: (screenWidth / 2) - 25,
+        width: (mediaWidth / 2) - 20,
         margin: EdgeInsets.only(top: 3, bottom: 4),
+        padding: EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(15),
+        ),
         child: Column(
           children: [
             item.imageUrl == "" || item.imageUrl == null
                 ? Container(
                     decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12.5),
-                        color: primaryColor),
-                    child: Image.asset(
-                      "assets/pizza_image.jpg",
-                      height: screenHeight * 0.165,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
+                      borderRadius: BorderRadius.circular(15),
+                      color: primaryColor,
+                    ),
+                    child: ClipRRect(
+                      // Ensures rounded corners apply to the image
+                      borderRadius: BorderRadius.circular(20),
+                      child: Image.asset(
+                        "assets/appLogo.png",
+                        height: screenHeight * 0.15,
+                        width: double.infinity,
+                        fit: BoxFit
+                            .cover, // Use BoxFit.cover to maintain aspect ratio and fill the container
+                      ),
                     ),
                   )
                 : Stack(
@@ -59,26 +70,29 @@ class ProductComponent extends StatelessWidget {
                     children: [
                       Container(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12.5),
+                          borderRadius: BorderRadius.circular(30),
                           border: Border.all(
-                              color: Theme.of(context).cardColor, width: 0.3),
+                              color: Theme.of(context).focusColor, width: 0.3),
                           color: isDarkMode
-                              ? AppColor.DARK_CARD_COLOR
+                              ? AppColor.CardDarkColor
                               : Colors.white,
                         ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12.5),
+                          borderRadius: BorderRadius.circular(20),
                           child: Image.network(
                             "${item.imageUrl}",
-                            height: screenHeight * 0.165,
+                            height: screenHeight * 0.15,
                             width: double.infinity,
                             fit: BoxFit.cover,
                             errorBuilder: (BuildContext context,
                                 Object exception, StackTrace? stackTrace) {
                               return Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
                                 child: Image.asset(
-                                  "assets/pizza_image.jpg",
-                                  height: screenHeight * 0.165,
+                                  "assets/appLogo.png",
+                                  height: screenHeight * 0.15,
                                   width: double.infinity,
                                   fit: BoxFit.cover,
                                 ),
@@ -108,14 +122,8 @@ class ProductComponent extends StatelessWidget {
                         right: 0,
                         left: 0,
                         child: Container(
-                          /*
-                      width: double
-                          .infinity,
-                      height:
-                      screenHeight *
-                          0.165,*/
                           child: Align(
-                            alignment: Alignment.bottomCenter,
+                            alignment: Alignment.bottomRight,
                             child: item.quantity == 0
                                 ? GestureDetector(
                                     onTap: () {
@@ -128,7 +136,7 @@ class ProductComponent extends StatelessWidget {
                                           borderRadius:
                                               BorderRadius.circular(30)),
                                       color: isDarkMode
-                                          ? AppColor.DARK_CARD_COLOR
+                                          ? AppColor.CardDarkColor
                                           : Colors.white,
                                       child: Container(
                                         width: 32,
@@ -152,12 +160,6 @@ class ProductComponent extends StatelessWidget {
                         bottom: 0,
                         right: 0,
                         child: Container(
-                          /*
-                      width: double
-                          .infinity,
-                      height:
-                      screenHeight *
-                          0.165,*/
                           child: Align(
                             alignment: Alignment.bottomCenter,
                             child: item.quantity == 0
@@ -171,7 +173,7 @@ class ProductComponent extends StatelessWidget {
                                           borderRadius:
                                               BorderRadius.circular(12),
                                           color: isDarkMode
-                                              ? AppColor.DARK_CARD_COLOR
+                                              ? AppColor.CardDarkColor
                                               : Colors.white),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
@@ -213,58 +215,69 @@ class ProductComponent extends StatelessWidget {
                           ),
                         ),
                       ),
-                      showFavIcon ?
-                      Container(
-                          width: double.infinity,
-                          height: screenHeight * 0.165,
-                          child: Align(
-                            alignment: Alignment.topLeft,
-                            child: GestureDetector(
-                              onTap: () {
-                                onFavoriteTap();
-                              },
-                              child:item.favorite ?? true ? Container(
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(35),
-                                    color: AppColor.SECONDARY),
-                                padding: EdgeInsets.all(6),
-                                margin: EdgeInsets.all(4.5),
-                                child: Icon(
-                                  Icons.favorite,
-                                  size: 14,
-                                  color: Colors.white,
+                      /*    showFavIcon
+                          ? Container(
+                              width: double.infinity,
+                              height: screenHeight * 0.165,
+                              child: Align(
+                                alignment: Alignment.topLeft,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    onFavoriteTap();
+                                  },
+                                  child: item.favorite ?? true
+                                      ? Container(
+                                          decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(35),
+                                              color: AppColor.Secondary),
+                                          padding: EdgeInsets.all(6),
+                                          margin: EdgeInsets.all(4.5),
+                                          child: Icon(
+                                            Icons.favorite,
+                                            size: 14,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : Padding(
+                                          padding: const EdgeInsets.all(6.0),
+                                          child: Icon(
+                                            Icons.favorite,
+                                            size: 22,
+                                            color: Colors.white,
+                                          ),
+                                        ),
                                 ),
-                              ) : Padding(
-                                padding: const EdgeInsets.all(6.0),
-                                child: Icon(
-                                  Icons.favorite,
-                                  size: 22,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          )) : SizedBox(),
-                      item.isBuy1Get1 == true ?
-                      Container(
-                          width: double.infinity,
-                          height: screenHeight * 0.165,
-                          child: Align(
-                            alignment: Alignment.topRight,
-                            child:
-                            Container(
-                                margin: EdgeInsets.symmetric(horizontal: 6,vertical: 6),
-                                padding: EdgeInsets.symmetric(horizontal: 3,vertical: 3),
-                                decoration: BoxDecoration(
-                                    color: AppColor.PRIMARY,
-                                    borderRadius: BorderRadius.circular(5)
-                                ),
-                                child: Text("Buy 1 GET 1",style: TextStyle(fontSize: 9,fontWeight: FontWeight.bold,color: AppColor.WHITE),)),
-                          )):SizedBox()
+                              ))
+                          : SizedBox(),*/
+                      item.isBuy1Get1 == true
+                          ? Container(
+                              width: double.infinity,
+                              height: screenHeight * 0.165,
+                              child: Align(
+                                alignment: Alignment.topRight,
+                                child: Container(
+                                    margin: EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 6),
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 3, vertical: 3),
+                                    decoration: BoxDecoration(
+                                        color: AppColor.Primary,
+                                        borderRadius: BorderRadius.circular(5)),
+                                    child: Text(
+                                      "Buy 1 GET 1",
+                                      style: TextStyle(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white),
+                                    )),
+                              ))
+                          : SizedBox()
                     ],
                   ),
             //SizedBox(height: 2,),
             Container(
-              margin: EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+              margin: EdgeInsets.symmetric(horizontal: 2, vertical: 5),
               width: double.infinity,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -275,47 +288,24 @@ class ProductComponent extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        width: screenWidth * 0.28,
+                        width: mediaWidth * 0.25,
                         child: Text(
                           capitalizeFirstLetter("${item.title}"),
+                          maxLines: 1,
                           style: TextStyle(
                               fontSize: 12, fontWeight: FontWeight.bold),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       Container(
-                        width: screenWidth * 0.13,
-                        child: Text.rich(
-                          TextSpan(
-                            children: [
-                              WidgetSpan(
-                                child: Transform.translate(
-                                  offset: const Offset(0, -4),
-                                  // Moves the dollar sign slightly upward
-                                  child: Text(
-                                    "\$",
-                                    style: TextStyle(
-                                      fontSize: 9.5,
-                                      // Smaller font size for the dollar sign
-                                      color:
-                                          primaryColor, // Color of the dollar sign
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              TextSpan(
-                                text: "${item.price}",
-                                // Price value
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  // Regular font size for price
-                                  fontWeight: FontWeight.bold,
-                                  color: primaryColor, // Color for price
-                                ),
-                              ),
-                            ],
+                        //width: mediaWidth * 0.13,
+                        child: Text(
+                          "\$${item.price}",
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: primaryColor,
                           ),
-                          overflow: TextOverflow.ellipsis,
                         ),
                       )
                     ],
