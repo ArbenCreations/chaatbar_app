@@ -12,6 +12,7 @@ import '../../../model/viewModel/mainViewModel.dart';
 import '../../../theme/CustomAppColor.dart';
 import '../../../utils/Helper.dart';
 import '../../../utils/Util.dart';
+import '../../component/CustomAlert.dart';
 import '../../component/connectivity_service.dart';
 import '../../component/custom_circular_progress.dart';
 import '../../component/session_expired_dialog.dart';
@@ -546,7 +547,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         print("ApiResponse => ${mediaList?.completedOrders}");
         if (editProfile) {
           Navigator.pop(context);
-          CustomToast.showToast(
+          CustomAlert.showToast(
               context: context, message: "${apiResponse.message}");
         }
 

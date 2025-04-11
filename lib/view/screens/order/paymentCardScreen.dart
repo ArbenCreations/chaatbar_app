@@ -1,4 +1,8 @@
+import 'dart:io';
+
+import 'package:apple_pay_flutter/apple_pay_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_credit_card/flutter_credit_card.dart';
 import 'package:provider/provider.dart';
 
@@ -15,6 +19,8 @@ import '../../../model/viewModel/mainViewModel.dart';
 import '../../../theme/CustomAppColor.dart';
 import '../../../utils/Helper.dart';
 import '../../../utils/Util.dart';
+import '../../component/ApplePayButton.dart';
+import '../../component/CustomAlert.dart';
 import '../../component/connectivity_service.dart';
 import '../../component/custom_circular_progress.dart';
 import '../../component/session_expired_dialog.dart';
@@ -61,6 +67,7 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
   bool isKeypadVisible = true;
   String responseMessage = '';
   String apiKey = "";
+  String appId = "";
   bool phoneNumberValid = false;
   int? customerId = 0;
   final _formKey = GlobalKey<FormState>();
@@ -81,8 +88,15 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
 
     Helper.getApiKey().then((data) {
       setState(() {
-        apiKey = "12c12489-fc5f-253d-af89-270d4b68b87e";//"${data ?? ""}";
+        apiKey = "${data ?? ""}";
         print("apiKey:$apiKey");
+      });
+    });
+
+    Helper.getAppId().then((data) {
+      setState(() {
+        appId = "${data ?? ""}";
+        print("appId:$appId");
       });
     });
 
@@ -91,7 +105,6 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
         customerId = int.parse("${onValue?.id ?? 0}"); //?? VendorData();
       });
     });
-
   }
 
   @override
@@ -161,7 +174,7 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
       case Status.COMPLETED:
         print("rwrwr ");
         //Navigator.pushNamed(context, '/ProfileScreen');
-        CustomToast.showToast(context: context, message: apiResponse.message);
+        CustomAlert.showToast(context: context, message: apiResponse.message);
 
         return Container(); // Return an empty container as you'll navigate away
       case Status.ERROR:
@@ -170,7 +183,7 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
                 "${Languages.of(context)?.labelInvalidAccessToken}")) {
           SessionExpiredDialog.showDialogBox(context: context);
         } else {
-          CustomToast.showToast(context: context, message: apiResponse.message);
+          CustomAlert.showToast(context: context, message: apiResponse.message);
         }
         return Center(
             //child: Text('Please try again later!!!'),
@@ -228,7 +241,7 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
                     isHolderNameVisible: true,
                     cardBgColor: cardColor,
                     backgroundImage:
-                    useBackgroundImage ? 'assets/card_bg.png' : null,
+                        useBackgroundImage ? 'assets/card_bg.png' : null,
                     isSwipeGestureEnabled: true,
                     onCreditCardWidgetChange:
                         (CreditCardBrand creditCardBrand) {},
@@ -254,14 +267,14 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
                             onCreditCardModelChange: (creditCardModel) {
                               WidgetsBinding.instance.addPostFrameCallback((_) {
                                 setState(() {
-                                  cardHolderName = creditCardModel.cardHolderName ?? '';
+                                  cardHolderName =
+                                      creditCardModel.cardHolderName ?? '';
                                   cardNumber = creditCardModel.cardNumber ?? '';
                                   expiryDate = creditCardModel.expiryDate ?? '';
                                   cvvCode = creditCardModel.cvvCode ?? '';
                                   isCvvFocused = creditCardModel.isCvvFocused;
                                 });
                               });
-
                             },
                             cardNumber: cardNumber,
                             cvvCode: cvvCode,
@@ -271,6 +284,13 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
                             onTap: _onValidate,
                             child: _buildValidateButton(mediaWidth),
                           ),
+                        /*  Platform.isIOS
+                              ? ApplePayButton(
+                                  onPressed: () {
+                                    makePayment(); // your payment logic
+                                  },
+                                )
+                              : SizedBox(),*/
                         ],
                       ),
                     ),
@@ -281,20 +301,63 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
           ),
           isLoading
               ? Stack(
-            children: [
-              // Block interaction
-              ModalBarrier(
-                  dismissible: false, color: Colors.transparent),
-              // Loader indicator
-              Center(
-                child: CustomCircularProgress(),
-              ),
-            ],
-          )
+                  children: [
+                    // Block interaction
+                    ModalBarrier(dismissible: false, color: Colors.transparent),
+                    // Loader indicator
+                    Center(
+                      child: CustomCircularProgress(),
+                    ),
+                  ],
+                )
               : SizedBox(),
         ],
       ),
     );
+  }
+
+  Future<void> makePayment() async {
+    dynamic applePaymentData;
+    List<PaymentItem> paymentItems = [
+      PaymentItem(
+          label: 'Label',
+          amount: double.parse("${widget.orderData?.order?.totalAmount}"),
+          shippingcharge: 0.0)
+    ];
+
+    try {
+      applePaymentData = await ApplePayFlutter.makePayment(
+        countryCode: "US",
+        currencyCode: "USD",
+        paymentNetworks: [
+          PaymentNetwork.visa,
+          PaymentNetwork.mastercard,
+          PaymentNetwork.amex,
+        ],
+        merchantIdentifier: "merchant.com.chaatbar",
+        paymentItems: paymentItems,
+        customerEmail: "${widget.orderData?.order?.customerEmail}",
+        customerName: "${widget.orderData?.order?.customerName}",
+        companyName: "Concerto Soft",
+      );
+
+      print("Payment response: ${applePaymentData.toString()}");
+
+      if (applePaymentData != null && applePaymentData["ok"] == true) {
+        final paymentId = applePaymentData["transactionIdentifier"];
+        final paymentType = applePaymentData["paymentType"];
+
+        _hitSuccessCallBack(paymentId, paymentType);
+      } else {
+        print("Payment was not successful or cancelled.");
+        CustomAlert.showToast(
+          context: context,
+          message: "Something went wrong. Please try with card payment.",
+        );
+      }
+    } on PlatformException catch (e) {
+      print('Failed payment: ${e.message}');
+    }
   }
 
   void _onBackPressed(BuildContext context) async {
@@ -456,8 +519,8 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
 
       CardRequest cardRequest = CardRequest(card: cardDetails);
       //await Provider.of<MainViewModel>(context, listen: false).getApiToken("https://token-sandbox.dev.clover.com/v1/tokens", apiKey.toString(), cardRequest);
-       await Provider.of<MainViewModel>(context, listen: false).getApiToken(
-          "https://token.clover.com/v1/tokens", "12e4e3acdf0f20655aab1ddfd4adf912", cardRequest);
+      await Provider.of<MainViewModel>(context, listen: false).getApiToken(
+          "https://token.clover.com/v1/tokens", "$appId", cardRequest);
       ApiResponse apiResponse =
           Provider.of<MainViewModel>(context, listen: false).response;
       getApiTokenResponse(context, apiResponse);
@@ -486,7 +549,7 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
         return Container(); // Return an empty container as you'll navigate away
       case Status.ERROR:
         print("message : ${apiResponse.message}");
-        CustomToast.showToast(context: context, message: apiResponse.message);
+        CustomAlert.showToast(context: context, message: apiResponse.message);
         return Center();
       case Status.INITIAL:
       default:
@@ -525,7 +588,7 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
           //.getFinalPaymentApi("https://scl-sandbox.dev.clover.com/v1/charges", "f2240939-d0fa-ccfd-88ff-2f14e160dc6a", transactionRequest);
           // await Provider.of<MainViewModel>(context, listen: false).getFinalPaymentApi("https://scl.clover.com/v1/charges", "$apiKey", transactionRequest);
           .getFinalPaymentApi("https://scl.clover.com/v1/charges",
-              "6f943c05-9a54-1d08-f870-d8eeebe8cb40", transactionRequest);
+          "$apiKey", transactionRequest);
       ApiResponse apiResponse =
           Provider.of<MainViewModel>(context, listen: false).response;
       getFinalPaymentApiResponse(context, apiResponse);
@@ -554,7 +617,7 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
         return Container(); // Return an empty container as you'll navigate away
       case Status.ERROR:
         print("message : ${apiResponse.message}");
-        CustomToast.showToast(context: context, message: apiResponse.message);
+        CustomAlert.showToast(context: context, message: apiResponse.message);
         return Center();
       case Status.INITIAL:
       default:
@@ -615,7 +678,7 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
         return Container(); // Return an empty container as you'll navigate away
       case Status.ERROR:
         print("message : ${apiResponse.message}");
-        CustomToast.showToast(context: context, message: apiResponse.message);
+        CustomAlert.showToast(context: context, message: apiResponse.message);
         return Center();
       case Status.INITIAL:
       default:

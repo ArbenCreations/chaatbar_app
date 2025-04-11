@@ -15,6 +15,7 @@ import '../../../../theme/CustomAppColor.dart';
 import '../../../../utils/Helper.dart';
 import '../../../../utils/Util.dart';
 import '../../../../model/viewModel/mainViewModel.dart';
+import '../../component/CustomAlert.dart';
 import '../../component/connectivity_service.dart';
 import '../../component/custom_circular_progress.dart';
 import '../../component/session_expired_dialog.dart';
@@ -95,7 +96,7 @@ class _EditInformationScreenState extends State<EditInformationScreen> {
         await Helper.saveKycStatus(mediaList?.kycStatus);
         print(mediaList?.countryName);*/
 
-        CustomToast.showToast(
+        CustomAlert.showToast(
             context: context, message: "${mediaList?.message}");
         hideKeyBoard();
         Navigator.pushReplacementNamed(context, "/BottomNavigation",arguments: 3);

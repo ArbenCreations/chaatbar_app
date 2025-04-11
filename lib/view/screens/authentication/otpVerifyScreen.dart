@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../languageSection/Languages.dart';
 import '../../../utils/Util.dart';
+import '../../component/CustomAlert.dart';
 import '../../component/connectivity_service.dart';
 import '../../component/custom_button_component.dart';
 import '../../component/custom_circular_progress.dart';
@@ -104,7 +105,7 @@ class _OTPVerifyScreenState extends State<OTPVerifyScreen> {
         return Center(child: CircularProgressIndicator());
       case Status.COMPLETED:
         print("OtpVerify ${signUpVerifyResponse?.token}");
-        CustomToast.showToast(
+        CustomAlert.showToast(
             context: context,
             message: "Signup completed. Please Login to continue.");
 
@@ -112,7 +113,7 @@ class _OTPVerifyScreenState extends State<OTPVerifyScreen> {
 
         return Container(); // Return an empty container as you'll navigate away
       case Status.ERROR:
-        CustomToast.showToast(context: context, message: message);
+        CustomAlert.showToast(context: context, message: message);
         return Center(
           child: Text('Please try again later!!!'),
         );
@@ -137,11 +138,11 @@ class _OTPVerifyScreenState extends State<OTPVerifyScreen> {
       case Status.COMPLETED:
         // print("rwrwr ${phoneVerifyResponse?.mobileOtp}");
         //Call Toast
-        CustomToast.showToast(context: context, message: message);
+        CustomAlert.showToast(context: context, message: message);
         // Navigate to the new screen after receiving the response
         return Container(); // Return an empty container as you'll navigate away
       case Status.ERROR:
-        CustomToast.showToast(context: context, message: apiResponse?.message);
+        CustomAlert.showToast(context: context, message: apiResponse?.message);
         return Center(
           child: Text('Please try again later!!!'),
         );

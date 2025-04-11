@@ -11,6 +11,7 @@ import '../../../../../model/apis/apiResponse.dart';
 import '../../../../../utils/Helper.dart';
 import '../../../../model/viewModel/mainViewModel.dart';
 import '../../../../utils/Util.dart';
+import '../../../component/CustomAlert.dart';
 import '../../../component/connectivity_service.dart';
 import '../../../component/session_expired_dialog.dart';
 
@@ -86,7 +87,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       case Status.COMPLETED:
         print("rwrwr ");
         //Navigator.pushNamed(context, '/ProfileScreen');
-        CustomToast.showToast(context: context, message: apiResponse.message);
+        CustomAlert.showToast(context: context, message: apiResponse.message);
         Helper.clearAllSharedPreferences();
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => LoginScreen()),
@@ -100,7 +101,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 "${Languages.of(context)?.labelInvalidAccessToken}")) {
           SessionExpiredDialog.showDialogBox(context: context);
         } else {
-          CustomToast.showToast(context: context, message: apiResponse.message);
+          CustomAlert.showToast(context: context, message: apiResponse.message);
         }
         return Center(
             //child: Text('Please try again later!!!'),
@@ -159,7 +160,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 ),
               ),
             ),
-            if (isLoading) CircularProgressIndicator(),
           ],
         ),
       ),

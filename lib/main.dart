@@ -1,4 +1,5 @@
 import 'package:TheChaatBar/utils/Helper.dart';
+import 'package:TheChaatBar/view/component/CustomAlert.dart';
 import 'package:TheChaatBar/view/screens/authentication/forgotPassword/changePasswordScreen.dart';
 import 'package:TheChaatBar/view/screens/authentication/forgotPassword/forgotPasswordScreen.dart';
 import 'package:TheChaatBar/view/screens/authentication/welcomeScreen.dart';
@@ -119,6 +120,11 @@ void main() async {
       [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
   runApp(MyApp(initialMessage: null));
+
+  // Clear all notifications when app is resumed or opened
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    FlutterLocalNotificationsPlugin().cancelAll();
+  });
 }
 
 class MyApp extends StatefulWidget {
@@ -160,7 +166,7 @@ class _MyAppState extends State<MyApp> {
 
   void setupNotificationHandlers(BuildContext context) {
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      CustomToast.showToast(context: context, message: "$message");
+      CustomAlert.showToast(context: context, message: "$message");
       // Navigate to the ProfileScreen when the notification is clicked
       final notificationResponse =
           NotificationOtpResponse.fromJson(message.data);

@@ -28,6 +28,7 @@ import '../../../model/viewModel/mainViewModel.dart';
 import '../../../theme/CustomAppColor.dart';
 import '../../../utils/Helper.dart';
 import '../../../utils/Util.dart';
+import '../../component/CustomAlert.dart';
 import '../../component/all_category_shimmer.dart';
 import '../../component/connectivity_service.dart';
 import '../../component/my_navigator_observer.dart';
@@ -1266,7 +1267,7 @@ class _MenuScreenState extends State<MenuScreen>
               if (data.vendorId != item.vendorId) {
                 cartDataDao.clearAllCartProduct();
                 cartDataDao.insertCartProduct(item);
-                CustomToast.showToast(
+                CustomAlert.showToast(
                     context: context,
                     message:
                         "Removed items from cart and added latest item because you can only order from one restaurant at once.");

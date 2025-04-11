@@ -21,6 +21,7 @@ import '../../../model/response/productDataDB.dart';
 import '../../../model/response/storeStatusResponse.dart';
 import '../../../model/viewModel/mainViewModel.dart';
 import '../../../utils/Helper.dart';
+import '../../component/CustomAlert.dart';
 import '../../component/DashedLine.dart';
 import '../../component/connectivity_service.dart';
 import '../../component/custom_circular_progress.dart';
@@ -605,7 +606,7 @@ class _CartScreenState extends State<CartScreen> {
                                               {_fetchCouponData()}
                                             else
                                               {
-                                                CustomToast.showToast(
+                                                CustomAlert.showToast(
                                                     context: context,
                                                     message:
                                                         "Please Enter Coupon Code",
@@ -885,7 +886,7 @@ class _CartScreenState extends State<CartScreen> {
                                               email == "guest@isekaitech.com"
                                                   ? showGuestUserAlert(context)
                                                   :
-                                                  //CustomToast.showToast(context: context, message: "ApiKey 8e422a10-2d70-abda-35cc-8ed49cc03884");
+                                                  //CustomAlert.showToast(context: context, message: "ApiKey 8e422a10-2d70-abda-35cc-8ed49cc03884");
                                                   //_addRedeemPointsData();
                                                   /*                      Navigator.pushNamed(
                                                                         context,
@@ -1435,7 +1436,7 @@ class _CartScreenState extends State<CartScreen> {
         } else {
           print(
               'Condition failed: Total Price: $totalPrice, Min Cart Amt: ${couponDetailsResponse?.minCartAmt}');
-          CustomToast.showToast(
+          CustomAlert.showToast(
               context: context,
               message:
                   "Min cart amount should be ${couponDetailsResponse?.minCartAmt}",
@@ -1532,7 +1533,7 @@ class _CartScreenState extends State<CartScreen> {
         setState(() {
           if (storeStatusResponse?.storeStatus == "offline") {
             isStoreOnline = false;
-            CustomToast.showToast(
+            CustomAlert.showToast(
                 context: context, message: "Store is Closed!");
           } else if (storeStatusResponse?.storeStatus == "online") {
             isStoreOnline = true;
@@ -1920,7 +1921,7 @@ class _CartScreenState extends State<CartScreen> {
         return Container(); // Return an empty container as you'll navigate away
       case Status.ERROR:
         print("message : ${apiResponse.message}");
-        CustomToast.showToast(context: context, message: apiResponse.message);
+        CustomAlert.showToast(context: context, message: apiResponse.message);
         return Center();
       case Status.INITIAL:
       default:

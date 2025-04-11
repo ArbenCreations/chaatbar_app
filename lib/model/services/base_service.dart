@@ -2,7 +2,7 @@ import 'dart:io';
 
 
 abstract class BaseService {
-  final String BaseUrl = "http://66.179.210.141:3000/";
+  final String BaseUrl = "https://chaatbar.utellorders.ca/";
 
   String getFullUrl(String endpoint) {
     return "$BaseUrl$endpoint";

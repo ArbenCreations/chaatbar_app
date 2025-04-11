@@ -12,6 +12,7 @@ class Helper {
   static String vendorDetailPref = 'VendorDetail';
   static String vendor_theme = 'vendorTheme';
   static String api_key = 'apikey';
+  static String app_id = 'appId';
   static String pref_token = 'token';
   static String pref_device_token = 'device_token';
   static String biometricPref = 'biometricPref';
@@ -95,6 +96,18 @@ class Helper {
   static Future<String?> getApiKey() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     return sharedPreferences.getString(api_key);
+  }
+
+
+  static Future<bool> saveAppId(token) async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    return await sharedPreferences.setString(app_id, token);
+  }
+
+  // Read Data
+  static Future<String?> getAppId() async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    return sharedPreferences.getString(app_id);
   }
 
 

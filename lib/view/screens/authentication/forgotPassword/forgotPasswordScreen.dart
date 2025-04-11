@@ -11,6 +11,7 @@ import '../../../../model/response/createOtpChangePassResponse.dart';
 import '../../../../model/viewModel/mainViewModel.dart';
 import '../../../../utils/Helper.dart';
 import '../../../../utils/Util.dart';
+import '../../../component/CustomAlert.dart';
 import '../../../component/connectivity_service.dart';
 import '../../../component/session_expired_dialog.dart';
 
@@ -81,7 +82,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         return Center(child: CircularProgressIndicator());
       case Status.COMPLETED:
         String data = "${mediaList?.email}";
-        CustomToast.showToast(context: context, message: apiResponse.message);
+        CustomAlert.showToast(context: context, message: apiResponse.message);
 
         Navigator.pushNamed(context, "/OtpForgotPassScreen", arguments: data);
 
@@ -96,7 +97,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 "${Languages.of(context)?.labelInvalidAccessToken}")) {
           SessionExpiredDialog.showDialogBox(context: context);
         } else {
-          CustomToast.showToast(context: context, message: apiResponse.message);
+          CustomAlert.showToast(context: context, message: apiResponse.message);
         }
         return Center(
           child: Text('Please try again later!!!'),
@@ -121,7 +122,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       case Status.COMPLETED:
         print("rwrwr ");
         //Navigator.pushNamed(context, '/ProfileScreen');
-        CustomToast.showToast(context: context, message: apiResponse.message);
+        CustomAlert.showToast(context: context, message: apiResponse.message);
         Helper.clearAllSharedPreferences();
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => LoginScreen()),

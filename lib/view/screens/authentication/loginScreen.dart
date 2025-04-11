@@ -20,6 +20,7 @@ import '../../../model/request/signUpRequest.dart';
 import '../../../model/response/signUpInitializeResponse.dart';
 import '../../../model/services/AuthenticationProvider.dart';
 import '../../../utils/Util.dart';
+import '../../component/CustomAlert.dart';
 import '../../component/connectivity_service.dart';
 import '../../component/custom_circular_progress.dart';
 import '../../component/toastMessage.dart';
@@ -320,8 +321,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
-            FadeInUp(
-                duration: Duration(milliseconds: 1800),child: _divider()),
+            FadeInUp(duration: Duration(milliseconds: 1800), child: _divider()),
             FadeInUp(
               duration: Duration(milliseconds: 1800),
               child: _googleButton(),
@@ -402,7 +402,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     });
                   } else {
                     await Provider.of<MainViewModel>(context, listen: false)
-                        .signInWithPass("/api/v1/app/customers/sign_in", request);
+                        .signInWithPass(
+                            "/api/v1/app/customers/sign_in", request);
 
                     ApiResponse apiResponse =
                         Provider.of<MainViewModel>(context, listen: false)
@@ -711,7 +712,7 @@ class _LoginScreenState extends State<LoginScreen> {
         return Container(); // Return an empty container as you'll navigate away
       case Status.ERROR:
         print("message : ${apiResponse.message}");
-        CustomToast.showToast(context: context, message: apiResponse.message);
+        CustomAlert.showToast(context: context, message: apiResponse.message);
         return Center();
       case Status.INITIAL:
       default:
@@ -784,7 +785,7 @@ class _LoginScreenState extends State<LoginScreen> {
           print('Failed to save token.');
         }
 
-        await Helper.savePassword(_passwordController.text);
+        await Helper.savePassword("applesign1");
         String? password = await Helper.getPassword();
         print("password: ${password}");
         Navigator.pushReplacementNamed(context, "/VendorsListScreen",
@@ -797,7 +798,7 @@ class _LoginScreenState extends State<LoginScreen> {
           //showUserDetailsBottomSheet(context, user);
           _showSignUpBottomSheet(context, user);
         } else {
-          CustomToast.showToast(context: context, message: apiResponse.message);
+          CustomAlert.showToast(context: context, message: apiResponse.message);
         }
 
         return Center();
@@ -917,7 +918,7 @@ class _LoginScreenState extends State<LoginScreen> {
         return Center(child: CircularProgressIndicator());
       case Status.COMPLETED:
         print("GetSetUpAccountWidget : ${signUpResponse?.phoneNumber}");
-        await Helper.savePassword(_passwordController.text);
+        await Helper.savePassword(request.customer?.password);
 
         Navigator.pushNamed(context, "/OTPVerifyScreen",
             arguments: "${request.customer?.phoneNumber}");
@@ -928,12 +929,12 @@ class _LoginScreenState extends State<LoginScreen> {
               "Something went wrong, Please signup normally for the time being";
         } else if (message.contains("401")) {
         } else if (apiResponse.status == 500) {
-          CustomToast.showToast(
+          CustomAlert.showToast(
               context: context, message: "Something went wrong!");
         } else if (apiResponse.status == 422) {
-          CustomToast.showToast(context: context, message: message);
+          CustomAlert.showToast(context: context, message: message);
         } else {
-          CustomToast.showToast(context: context, message: message);
+          CustomAlert.showToast(context: context, message: message);
         }
         return Center(
           child: Text('Try again later..'),
@@ -1125,12 +1126,12 @@ class _SignUpFormState extends State<SignUpForm> {
               "Something went wrong, Please signup normally for the time being";
         } else if (message.contains("401")) {
         } else if (apiResponse.status == 500) {
-          CustomToast.showToast(
+          CustomAlert.showToast(
               context: context, message: "Something went wrong!");
         } else if (apiResponse.status == 422) {
-          CustomToast.showToast(context: context, message: message);
+          CustomAlert.showToast(context: context, message: message);
         } else {
-          CustomToast.showToast(context: context, message: message);
+          CustomAlert.showToast(context: context, message: message);
         }
         return Center(
           child: Text('Try again later..'),

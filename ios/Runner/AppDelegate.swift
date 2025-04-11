@@ -1,6 +1,7 @@
 import UIKit
 import Flutter
 import FirebaseCore
+import UserNotifications
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -8,20 +9,24 @@ import FirebaseCore
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-   if #available(iOS 10.0, *) {
-            UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
-          }
-   // Initialize Firebase
+    
+    // Set delegate to handle notifications while app is in foreground
+    if #available(iOS 10.0, *) {
+      UNUserNotificationCenter.current().delegate = self
+    }
+
+    // Initialize Firebase
     FirebaseApp.configure()
-    //GMSServices.provideAPIKey("your-google-api-key-here")
+    
+    // Register Flutter plugins
     GeneratedPluginRegistrant.register(with: self)
+    
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
-//  override func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any]) -> Bool {
-//          guard Jumio.SDK.handleDeeplinkURL(url) else {
-//              return false
-//          }
-//          return true
-//      }
+  // Clear notifications every time app becomes active
+  override func applicationDidBecomeActive(_ application: UIApplication) {
+    UNUserNotificationCenter.current().removeAllDeliveredNotifications()
+    UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+  }
 }

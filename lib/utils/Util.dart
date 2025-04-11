@@ -3,6 +3,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../languageSection/Languages.dart';
+import '../view/component/CustomAlert.dart';
 import '../view/component/toastMessage.dart';
 
 /// Validate password using regex pattern
@@ -125,7 +126,7 @@ String addCurrencySymbol(String? currencySymbol, String input) {
 /// Check if balance is more than the amount
 bool isBalanceMoreThanAmount(String balance, String amt, BuildContext context) {
   if (extractFloat(balance) <= extractFloat(amt)) {
-    CustomToast.showToast(context: context, message: 'You do not have enough balance.');
+    CustomAlert.showToast(context: context, message: 'You do not have enough balance.');
     return false;
   }
   return true;

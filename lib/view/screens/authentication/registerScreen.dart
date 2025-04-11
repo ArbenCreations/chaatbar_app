@@ -13,6 +13,7 @@ import '../../../../languageSection/Languages.dart';
 import '../../../../theme/CustomAppColor.dart';
 import '../../../../utils/Helper.dart';
 import '../../../utils/Util.dart';
+import '../../component/CustomAlert.dart';
 import '../../component/connectivity_service.dart';
 import '../../component/custom_button_component.dart';
 import '../../component/custom_circular_progress.dart';
@@ -318,49 +319,49 @@ class _RegisterScreenState extends State<RegisterScreen> {
       });
     } else {
       if (_emailController.text.isEmpty && _emailController.text.length > 2) {
-        CustomToast.showToast(
+        CustomAlert.showToast(
             context: context, message: emailError, duration: maxDuration);
       } else if (_nameController.text.isEmpty) {
-        CustomToast.showToast(
+        CustomAlert.showToast(
             context: context,
             message: "Please enter name",
             duration: maxDuration);
       } else if (_lastNameController.text.isEmpty) {
-        CustomToast.showToast(
+        CustomAlert.showToast(
             context: context,
             message: "Please enter last name",
             duration: maxDuration);
       } else if (_emailController.text.isEmpty) {
-        CustomToast.showToast(
+        CustomAlert.showToast(
             context: context,
             message: "Please enter email address",
             duration: maxDuration);
       } else if (_phoneController.text.isEmpty) {
-        CustomToast.showToast(
+        CustomAlert.showToast(
             context: context,
             message: "Please enter phone number",
             duration: maxDuration);
       } else if (_passwordController.text.isEmpty) {
-        CustomToast.showToast(
+        CustomAlert.showToast(
             context: context,
             message: "Please enter password",
             duration: maxDuration);
       } else if (_confirmPasswordController.text.isEmpty) {
-        CustomToast.showToast(
+        CustomAlert.showToast(
             context: context,
             message: "Please enter confirm password",
             duration: maxDuration);
       } else if (_passwordController.text != _confirmPasswordController.text) {
-        CustomToast.showToast(
+        CustomAlert.showToast(
             context: context,
             message: "${Languages.of(context)?.labelPasswordDoesntMatch}",
             duration: maxDuration);
       } else if (passwordError != null && _passwordController.text.length > 3) {
-        CustomToast.showToast(
+        CustomAlert.showToast(
             context: context, message: passwordError, duration: maxDuration);
       } else if (_confirmPasswordController.text.isEmpty &&
           _confirmPasswordController.text.length > 3) {
-        CustomToast.showToast(
+        CustomAlert.showToast(
             context: context, message: passwordError, duration: maxDuration);
       }
       setState(() {
@@ -817,7 +818,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               "Something went wrong, Please signup normally for the time being";
         }
         //Navigator.pop(context);
-        CustomToast.showToast(context: context, message: message);
+        CustomAlert.showToast(context: context, message: message);
         return Center(
           child: Text('Try again later..'),
         );

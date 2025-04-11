@@ -11,6 +11,7 @@ import '../../model/viewModel/mainViewModel.dart';
 import '../../theme/CustomAppColor.dart';
 import '../../utils/Helper.dart';
 import '../../utils/Util.dart';
+import '../component/CustomAlert.dart';
 import '../component/connectivity_service.dart';
 import '../component/toastMessage.dart';
 
@@ -70,7 +71,7 @@ class _VendorsListScreenState extends State<VendorsListScreen> {
 
           if (isWarning) {
             lastBackPressed = DateTime.now();
-            CustomToast.showToast(
+            CustomAlert.showToast(
                 message: "Press back again to exit", context: context);
           } else {
             SystemNavigator.pop();
@@ -124,17 +125,19 @@ class _VendorsListScreenState extends State<VendorsListScreen> {
                                     Helper.saveVendorData(selectedLocalityData);
                                     Helper.saveApiKey(selectedLocalityData
                                         .paymentSetting?.apiKey);
+                                    Helper.saveAppId(selectedLocalityData
+                                        .paymentSetting?.appId);
                                     Navigator.pushReplacementNamed(
                                         context, "/BottomNavigation");
                                   } else if (selectedLocalityData.status
                                           ?.contains("offline") ==
                                       true) {
-                                    CustomToast.showToast(
+                                    CustomAlert.showToast(
                                         context: context,
                                         message:
                                             "This store is closed at the moment.");
                                   } else {
-                                    CustomToast.showToast(
+                                    CustomAlert.showToast(
                                         context: context,
                                         message: "Select location.");
                                   }
@@ -372,7 +375,7 @@ class _VendorsListScreenState extends State<VendorsListScreen> {
         setState(() {
           vendorList = vendorListResponse!.vendors!;
         });
-        //CustomToast.showToast(context: context, message: "$token");
+        //CustomAlert.showToast(context: context, message: "$token");
         return Container();
       case Status.ERROR:
         return Center(

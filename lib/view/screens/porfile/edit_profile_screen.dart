@@ -13,6 +13,7 @@ import '../../../../theme/CustomAppColor.dart';
 import '../../../../utils/Helper.dart';
 import '../../../../utils/Util.dart';
 import '../../../model/request/deleteProfileRequest.dart';
+import '../../component/CustomAlert.dart';
 import '../../component/connectivity_service.dart';
 import '../../component/custom_button_component.dart';
 import '../../component/custom_circular_progress.dart';
@@ -35,6 +36,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String? userId = "";
   String? firstName = "";
   String? lastName = "";
+  String? password = "";
   String? phoneNo = "";
   String? email = "";
   String? imageUrl = "";
@@ -72,6 +74,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         vendorId = "${onValue?.id}";
         //setThemeColor();
       });
+    });
+
+    Helper.getPassword().then((userPassword) {
+      password = userPassword;
+      print("Password: ${password}");
     });
 
     Helper.getAppThemeMode().then((appTheme) {
@@ -133,103 +140,100 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ),
                       SizedBox(height: 20),
                       _buildTextInputField(
-                        label: "First Name",
-                        controller: _nameController,
-                        icon: Icons.person,
-                        isClickable: true
-                      ),
+                          label: "First Name",
+                          controller: _nameController,
+                          icon: Icons.person,
+                          isClickable: true),
                       SizedBox(height: 12),
                       _buildTextInputField(
-                        label: "Last Name",
-                        controller: _lastNameController,
-                        icon: Icons.person_outline,
-                          isClickable: true
-                      ),
+                          label: "Last Name",
+                          controller: _lastNameController,
+                          icon: Icons.person_outline,
+                          isClickable: true),
                       SizedBox(height: 12),
                       _buildTextInputField(
-                        label: "Email",
-                        controller: _emailController,
-                        icon: Icons.mail_outline,
-                        keyboardType: TextInputType.emailAddress,
-                          isClickable: false
-                      ),
+                          label: "Email",
+                          controller: _emailController,
+                          icon: Icons.mail_outline,
+                          keyboardType: TextInputType.emailAddress,
+                          isClickable: false),
                       SizedBox(height: 35),
-                      email !=
-                          "guest@isekaitech.com" ?
-                      Container(
-                        width: mediaWidth * 0.45,
-                        child: ElevatedButton(
-                          style: ButtonStyle(
-                            padding: MaterialStateProperty.all(
-                                EdgeInsets.symmetric(vertical: 13)),
-                            backgroundColor:
-                                MaterialStateProperty.all(AppColor.Primary),
-                            shape: MaterialStateProperty.all(
-                                RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            )),
-                          ),
-                          child: Text(
-                            "Save Changes",
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white),
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              editProfile = true;
-                            });
-                            _saveChanges();
-                          },
-                        ),
-                      ): SizedBox(),
-                      email !=
-                          "guest@isekaitech.com" ?
-                      Align(
-                        alignment: Alignment.bottomCenter,
-                        child: Container(
-                          width: mediaWidth * 0.45,
-                          margin: EdgeInsets.only(top: 5),
-                          child: TextButton(
-                            style: ButtonStyle(
-                              backgroundColor:
-                              WidgetStateProperty.all(Colors.red),
-                              padding: MaterialStateProperty.all(
-                                  EdgeInsets.symmetric(vertical: 13)),
-                              shape: MaterialStateProperty.all(
-                                  RoundedRectangleBorder(
+                      email != "guest@isekaitech.com"
+                          ? Container(
+                              width: mediaWidth * 0.45,
+                              child: ElevatedButton(
+                                style: ButtonStyle(
+                                  padding: MaterialStateProperty.all(
+                                      EdgeInsets.symmetric(vertical: 13)),
+                                  backgroundColor: MaterialStateProperty.all(
+                                      AppColor.Primary),
+                                  shape: MaterialStateProperty.all(
+                                      RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   )),
-                            ),
-                            onPressed: () async {
-                              _deleteAccount();
-                            },
-                            child: Text(
-                              Languages.of(context)!.labelDeleteAccount,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
+                                ),
+                                child: Text(
+                                  "Save Changes",
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white),
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    editProfile = true;
+                                  });
+                                  _saveChanges();
+                                },
                               ),
-                            ),
-                          ),
-                        ),
-                      ): SizedBox(),
+                            )
+                          : SizedBox(),
+                      email != "guest@isekaitech.com"
+                          ? Align(
+                              alignment: Alignment.bottomCenter,
+                              child: Container(
+                                width: mediaWidth * 0.45,
+                                margin: EdgeInsets.only(top: 5),
+                                child: TextButton(
+                                  style: ButtonStyle(
+                                    backgroundColor:
+                                        WidgetStateProperty.all(Colors.red),
+                                    padding: MaterialStateProperty.all(
+                                        EdgeInsets.symmetric(vertical: 13)),
+                                    shape: MaterialStateProperty.all(
+                                        RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    )),
+                                  ),
+                                  onPressed: () async {
+                                    _deleteAccount();
+                                  },
+                                  child: Text(
+                                    Languages.of(context)!.labelDeleteAccount,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                          : SizedBox(),
                     ],
                   ),
                 ),
                 isLoading
                     ? Stack(
-                  children: [
-                    // Block interaction
-                    ModalBarrier(
-                        dismissible: false, color: Colors.transparent),
-                    // Loader indicator
-                    Center(
-                      child: CustomCircularProgress(),
-                    ),
-                  ],
-                )
+                        children: [
+                          // Block interaction
+                          ModalBarrier(
+                              dismissible: false, color: Colors.transparent),
+                          // Loader indicator
+                          Center(
+                            child: CustomCircularProgress(),
+                          ),
+                        ],
+                      )
                     : SizedBox(),
               ],
             ),
@@ -264,7 +268,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         style: TextStyle(fontSize: 14),
         enabled: isClickable,
         decoration: InputDecoration(
-          icon: Icon(icon, color: AppColor.Secondary, size: 18,),
+          icon: Icon(
+            icon,
+            color: AppColor.Secondary,
+            size: 18,
+          ),
           labelText: label,
           labelStyle: TextStyle(color: Colors.grey, fontSize: 13),
           border: InputBorder.none,
@@ -352,7 +360,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         print("${mediaList?.completedOrders}");
         if (editProfile) {
           Navigator.of(context).pushReplacementNamed("/BottomNavigation");
-          CustomToast.showToast(
+          CustomAlert.showToast(
               context: context, message: "${apiResponse.message}");
         }
 
@@ -422,8 +430,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _deleteAccount() async {
     hideKeyBoard();
-    //_showLogOutDialog();
-    _showModal(context);
+    if (password == "applesign1" || password == "googlesign1") {
+      _showModalConfirmation(context);
+    } else {
+      _showModal(context);
+    }
   }
 
   void _showModal(BuildContext context) {
@@ -446,7 +457,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 style: TextStyle(fontSize: 12),
               ),
               content: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 5),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 12.0, horizontal: 5),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -460,9 +472,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       padding: EdgeInsets.symmetric(horizontal: 4.0),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10.0),
-                        color: isDarkMode
-                            ? AppColor.CardDarkColor
-                            : Colors.white,
+                        color:
+                            isDarkMode ? AppColor.CardDarkColor : Colors.white,
                         border: Border.all(color: Colors.grey, width: 0.5),
                       ),
                       child: Row(
@@ -481,11 +492,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 contentPadding: EdgeInsets.symmetric(
                                     vertical: 16.0, horizontal: 16.0),
                                 hintText: Languages.of(context)!.labelPassword,
-                                hintStyle: TextStyle(fontSize: 13, color: Colors.grey),
+                                hintStyle:
+                                    TextStyle(fontSize: 13, color: Colors.grey),
                                 icon: Icon(
                                   Icons.password,
                                   size: 16,
-                                  color: isDarkMode ? Colors.white : Colors.black,
+                                  color:
+                                      isDarkMode ? Colors.white : Colors.black,
                                 ),
                                 suffixIcon: GestureDetector(
                                   child: Icon(
@@ -525,7 +538,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     bool isConnected = await _connectivityService.isConnected();
 
                     if (phoneController.text.isEmpty) {
-                      CustomToast.showToast(
+                      CustomAlert.showToast(
                           context: context, message: "Please enter password");
                     } else {
                       setState(() => isLoading = true);
@@ -537,7 +550,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         });
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(Languages.of(context)!.labelNoInternetConnection),
+                            content: Text(Languages.of(context)!
+                                .labelNoInternetConnection),
                             duration: maxDuration,
                           ),
                         );
@@ -549,14 +563,106 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                         await Future.delayed(Duration(milliseconds: 2));
                         await Provider.of<MainViewModel>(context, listen: false)
-                            .deleteProfile("/api/v1/app/customers/verify_and_destroy", request);
+                            .deleteProfile(
+                                "/api/v1/app/customers/verify_and_destroy",
+                                request);
 
                         ApiResponse apiResponse =
-                            Provider.of<MainViewModel>(context, listen: false).response;
+                            Provider.of<MainViewModel>(context, listen: false)
+                                .response;
                         deleteProfileResponse(context, apiResponse);
 
                         setState(() => isLoading = false);
                       }
+                    }
+                  },
+                )
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showModalConfirmation(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      useSafeArea: true,
+      builder: (BuildContext context) {
+        bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+        bool isLoading = false;
+
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return AlertDialog(
+              insetPadding: EdgeInsets.symmetric(horizontal: 10),
+              title: Text(
+                "Are you sure you want to delete your account?",
+                style: TextStyle(fontSize: 12),
+              ),
+              content: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 12.0, horizontal: 5),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Email : ${_emailController.text}",
+                      style: TextStyle(fontSize: 12, color: Colors.black54),
+                    ),
+                    SizedBox(height: 8),
+                    if (isLoading)
+                      Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                  ],
+                ),
+              ),
+              actionsAlignment: MainAxisAlignment.center,
+              actions: <Widget>[
+                CustomButtonComponent(
+                  text: "Delete",
+                  mediaWidth: MediaQuery.of(context).size.width * 0.6,
+                  textColor: Colors.white,
+                  buttonColor: Colors.red,
+                  isDarkMode: isDarkMode,
+                  verticalPadding: 10,
+                  onTap: () async {
+                    hideKeyBoard();
+                    bool isConnected = await _connectivityService.isConnected();
+                    setState(() => isLoading = true);
+
+                    if (!isConnected) {
+                      setState(() {
+                        isLoading = false;
+                        isInternetConnected = false;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                              Languages.of(context)!.labelNoInternetConnection),
+                          duration: maxDuration,
+                        ),
+                      );
+                    } else {
+                      DeleteProfileRequest request = DeleteProfileRequest(
+                        email: _emailController.text,
+                        password: password,
+                      );
+
+                      await Future.delayed(Duration(milliseconds: 2));
+                      await Provider.of<MainViewModel>(context, listen: false)
+                          .deleteProfile(
+                              "/api/v1/app/customers/verify_and_destroy",
+                              request);
+
+                      ApiResponse apiResponse =
+                          Provider.of<MainViewModel>(context, listen: false)
+                              .response;
+                      deleteProfileResponse(context, apiResponse);
+
+                      setState(() => isLoading = false);
                     }
                   },
                 )
@@ -579,7 +685,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       case Status.LOADING:
         return Center(child: CircularProgressIndicator());
       case Status.COMPLETED:
-        CustomToast.showToast(
+        CustomAlert.showToast(
             context: context, message: "${mediaList?.message}");
 
         hideKeyBoard();
@@ -591,7 +697,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         database.cartDao.clearAllCartProduct();
         Navigator.of(context).pushNamedAndRemoveUntil(
           '/LoginScreen',
-              (Route<dynamic> route) => false,
+          (Route<dynamic> route) => false,
         );
         return Container(); //Return an empty container as you'll navigate away
       case Status.ERROR:
@@ -603,7 +709,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 "${Languages.of(context)?.labelInvalidAccessToken}")) {
           SessionExpiredDialog.showDialogBox(context: context);
         } else {
-          CustomToast.showToast(context: context, message: apiResponse.message);
+          CustomAlert.showToast(context: context, message: apiResponse.message);
         }
         print(apiResponse.message);
         return Center(

@@ -195,9 +195,9 @@ class _OtpForgotPassScreenState extends State<OtpForgotPassScreen> {
                         verticalPadding: 14,
                         onTap: () async {
                           hideKeyBoard();
-                          String otp =
-                              _inputValues.map((controller) => controller).join();
+                          //String otp=_inputValues.map((controller) => controller).join();
                           print("${widget.data}");
+                          print("OTP${otp.length}");
                           VerifyOtChangePassRequest data =
                               VerifyOtChangePassRequest(
                             email: "${widget.data}",

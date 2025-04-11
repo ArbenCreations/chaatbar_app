@@ -11,6 +11,7 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../model/apis/apiResponse.dart';
 import '../../theme/CustomAppColor.dart';
 import '../../model/viewModel/mainViewModel.dart';
+import '../component/CustomAlert.dart';
 import '../component/connectivity_service.dart';
 import '../component/toastMessage.dart';
 
@@ -246,7 +247,7 @@ class _ChooseLocalityScreenState extends State<ChooseLocalityScreen> {
                 if(selectedLocality.isNotEmpty){
                   Navigator.pushReplacementNamed(context, "/VendorScreen");
                 }else{
-                  CustomToast.showToast(context: context, message: "Select location or scan QR.");
+                  CustomAlert.showToast(context: context, message: "Select location or scan QR.");
                 }
               },
               child: Text(
