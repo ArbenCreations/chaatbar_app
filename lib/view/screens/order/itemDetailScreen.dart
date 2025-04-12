@@ -114,18 +114,24 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  "Order Placed",
-                                  style: TextStyle(
-                                      fontSize: 13, color: Colors.white),
-                                ),
-                                SizedBox(
-                                  height: 1,
-                                ),
-                                Text(
-                                  "on ${convertDateFormat("${order.createdAt}")} At ${convertTime("${order.createdAt}")}",
-                                  style: TextStyle(
-                                      fontSize: 12, color: Colors.white),
+                                Row(
+                                  children: [
+                                    Text(
+                                      "Order Placed",
+                                      style: TextStyle(
+                                          fontSize: 12, color: Colors.white),
+                                    ),
+                                    SizedBox(
+                                      height: 1,
+                                    ),
+                                    Text(
+                                      ": ${convertDateFormat("${order.createdAt}")} At ${convertTime("${order.createdAt}")}",
+                                      style: TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
                                 ),
                                 SizedBox(height: 5),
                                 Row(
@@ -133,14 +139,14 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                                     Text(
                                       "Pickup Time : ",
                                       style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold),
+                                          fontSize: 12, color: Colors.white),
                                     ),
                                     Text(
                                       "${convertDateFormat("${order.pickupDate}")} At ${convertTime("${order.pickupTime}")}",
                                       style: TextStyle(
-                                          fontSize: 13, color: Colors.white),
+                                          fontSize: 13,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold),
                                     ),
                                   ],
                                 ),
@@ -285,15 +291,15 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                                       _buildDetailCard('Discount: ',
                                           order.discountAmount, false),
                                       _buildDetailCard(
-                                          'gst (${order.gst ?? 0}%): ',
+                                          'Gst (${order.gst ?? 0}%): ',
                                           "${gstAmt.toStringAsFixed(1)}",
                                           false),
                                       _buildDetailCard(
-                                          'pst (${order.pst ?? 0}%): ',
+                                          'Pst (${order.pst ?? 0}%): ',
                                           "${pstAmt.toStringAsFixed(1)}",
                                           false),
                                       _buildDetailCard(
-                                          'hst (${order.hst ?? 0}%): ',
+                                          'Hst (${order.hst ?? 0}%): ',
                                           "${hstAmt.toStringAsFixed(1)}",
                                           false),
                                       _buildDetailCard('Grand Total: ',

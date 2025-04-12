@@ -17,7 +17,6 @@ import '../../component/CustomAlert.dart';
 import '../../component/connectivity_service.dart';
 import '../../component/custom_button_component.dart';
 import '../../component/custom_circular_progress.dart';
-import '../../component/toastMessage.dart';
 
 class RegisterScreen extends StatefulWidget {
   final String? userId; // Define the 'data' parameter here
@@ -100,212 +99,221 @@ class _RegisterScreenState extends State<RegisterScreen> {
     mediaWidth = MediaQuery.of(context).size.width;
     screenHeight = MediaQuery.of(context).size.height;
     ApiResponse apiResponse = Provider.of<MainViewModel>(context).response;
-    return Scaffold(
-      body: GestureDetector(
-        onTap: () {
-          hideKeyBoard();
-        },
-        child: Container(
-          decoration: BoxDecoration(
-              image: DecorationImage(
-                  image: AssetImage("assets/backtwo.png"), fit: BoxFit.fill)),
-          child: Stack(
-            children: [
-              CustomScrollView(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: Container(
-                      height: 100,
-                      width: mediaWidth,
-                      padding: EdgeInsets.symmetric(horizontal: 0),
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(20),
-                        bottomRight: Radius.circular(20),
-                      )),
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (bool didPop) {
+        if (didPop) {
+          return;
+        }
+        Navigator.pushReplacementNamed(context, "/LoginScreen");
+      },
+      child: Scaffold(
+        body: GestureDetector(
+          onTap: () {
+            hideKeyBoard();
+          },
+          child: Container(
+            decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: AssetImage("assets/backtwo.png"), fit: BoxFit.fill)),
+            child: Stack(
+              children: [
+                CustomScrollView(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: Container(
+                        height: 100,
+                        width: mediaWidth,
+                        padding: EdgeInsets.symmetric(horizontal: 0),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(20),
+                          bottomRight: Radius.circular(20),
+                        )),
+                      ),
                     ),
-                  ),
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    fillOverscroll: true,
-                    child: Container(
-                      height: screenHeight,
-                      margin: EdgeInsets.symmetric(horizontal: 10),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            "Register",
-                            overflow: TextOverflow.fade,
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 18.0, vertical: 10),
-                            child: Form(
-                              key: _formKey,
-                              child: Column(
-                                children: [
-                                  buildTextInput(
-                                      context,
-                                      "Enter ${Languages.of(context)!.labelName}",
-                                      _nameController,
-                                      Icons.account_box_outlined),
-                                  SizedBox(width: 5),
-                                  buildTextInput(
-                                      context,
-                                      "Enter ${Languages.of(context)!.labelLastname}",
-                                      _lastNameController,
-                                      Icons.account_box_outlined),
-                                  _buildEmailInput(
-                                      context,
-                                      "Your ${Languages.of(context)!.labelEmail}",
-                                      _emailController,
-                                      Icons.email_outlined),
-                                  _buildPhoneInput(
-                                      context,
-                                      "Your ${Languages.of(context)!.labelPhoneNumber}",
-                                      _phoneController,
-                                      Icons.call),
-                                  _buildPasswordTextField(
-                                      context,
-                                      Languages.of(context)!.labelPassword,
-                                      _passwordController,
-                                      passwordVisible,
-                                      isDarkMode,
-                                      "password",
-                                      Icons.password),
-                                  _buildPasswordTextField(
-                                      context,
-                                      Languages.of(context)!.labelConfirmPass,
-                                      _confirmPasswordController,
-                                      confirmPasswordVisible,
-                                      isDarkMode,
-                                      "confirmPassword",
-                                      Icons.verified_user),
-                                ],
-                              ),
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      fillOverscroll: true,
+                      child: Container(
+                        height: screenHeight,
+                        margin: EdgeInsets.symmetric(horizontal: 10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              "Register",
+                              overflow: TextOverflow.fade,
+                              style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold),
                             ),
-                          ),
-                          Align(
-                            alignment: Alignment.center,
-                            child: _buildConfirmButton(context, null),
-                          ),
-                          SizedBox(
-                            height: 5,
-                          ),
-                          Center(
-                              child: Text(
-                            "OR",
-                            style: TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.bold),
-                          )),
-                          SizedBox(
-                            height: 5,
-                          ),
-                           Center(
-                            child: GestureDetector(
-                              onTap: () async {
-                                User? user = await signInWithGoogle(
-                                    context, "$deviceToken");
-
-                                if (user != null) {
-                                  _showModal(context, user);
-                                  print("Signed in: ${user.displayName}");
-                                }
-                              },
-                              child: Container(
-                                height: 50,
-                                width: mediaWidth * 0.55,
-                                margin: EdgeInsets.symmetric(
-                                  vertical: 5,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColor.Primary,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: <Widget>[
-                                    Image.asset(
-                                      "assets/google_logo.png",
-                                      width: 22,
-                                      color: Colors.white,
-                                      fit: BoxFit.fill,
-                                    ),
-                                    Container(
-                                      margin: EdgeInsets.only(left: 8.0),
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                          'Sign up with Google',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold)),
-                                    ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 18.0, vertical: 10),
+                              child: Form(
+                                key: _formKey,
+                                child: Column(
+                                  children: [
+                                    buildTextInput(
+                                        context,
+                                        "Enter ${Languages.of(context)!.labelName}",
+                                        _nameController,
+                                        Icons.account_box_outlined),
+                                    SizedBox(width: 5),
+                                    buildTextInput(
+                                        context,
+                                        "Enter ${Languages.of(context)!.labelLastname}",
+                                        _lastNameController,
+                                        Icons.account_box_outlined),
+                                    _buildEmailInput(
+                                        context,
+                                        "Your ${Languages.of(context)!.labelEmail}",
+                                        _emailController,
+                                        Icons.email_outlined),
+                                    _buildPhoneInput(
+                                        context,
+                                        "Your ${Languages.of(context)!.labelPhoneNumber}",
+                                        _phoneController,
+                                        Icons.call),
+                                    _buildPasswordTextField(
+                                        context,
+                                        Languages.of(context)!.labelPassword,
+                                        _passwordController,
+                                        passwordVisible,
+                                        isDarkMode,
+                                        "password",
+                                        Icons.password),
+                                    _buildPasswordTextField(
+                                        context,
+                                        Languages.of(context)!.labelConfirmPass,
+                                        _confirmPasswordController,
+                                        confirmPasswordVisible,
+                                        isDarkMode,
+                                        "confirmPassword",
+                                        Icons.verified_user),
                                   ],
                                 ),
                               ),
                             ),
-                          ),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                "Have an account?",
-                                style: TextStyle(
-                                    fontSize: 12, color: Colors.black54),
+                            Align(
+                              alignment: Alignment.center,
+                              child: _buildConfirmButton(context, null),
+                            ),
+                            SizedBox(
+                              height: 5,
+                            ),
+                            Center(
+                                child: Text(
+                              "OR",
+                              style: TextStyle(
+                                  fontSize: 12, fontWeight: FontWeight.bold),
+                            )),
+                            SizedBox(
+                              height: 5,
+                            ),
+                            Center(
+                              child: GestureDetector(
+                                onTap: () async {
+                                  User? user = await signInWithGoogle(
+                                      context, "$deviceToken");
+
+                                  if (user != null) {
+                                    _showModal(context, user);
+                                    print("Signed in: ${user.displayName}");
+                                  }
+                                },
+                                child: Container(
+                                  height: 50,
+                                  width: mediaWidth * 0.55,
+                                  margin: EdgeInsets.symmetric(
+                                    vertical: 5,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColor.Primary,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: <Widget>[
+                                      Image.asset(
+                                        "assets/google_logo.png",
+                                        width: 22,
+                                        color: Colors.white,
+                                        fit: BoxFit.fill,
+                                      ),
+                                      Container(
+                                        margin: EdgeInsets.only(left: 8.0),
+                                        alignment: Alignment.center,
+                                        child: Text('Sign up with Google',
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold)),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
-                              SizedBox(
-                                width: 4,
-                              ),
-                              GestureDetector(
-                                  onTap: () {
-                                    Navigator.pushNamed(
-                                        context, "/LoginScreen");
-                                  },
-                                  child: Text(
-                                    "Sign in",
-                                    style: TextStyle(
-                                        fontSize: 13,
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold),
-                                  )),
-                            ],
-                          ),
-                        ],
+                            ),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  "Have an account?",
+                                  style: TextStyle(
+                                      fontSize: 12, color: Colors.black54),
+                                ),
+                                SizedBox(
+                                  width: 4,
+                                ),
+                                GestureDetector(
+                                    onTap: () {
+                                      Navigator.pushNamed(
+                                          context, "/LoginScreen");
+                                    },
+                                    child: Text(
+                                      "Sign in",
+                                      style: TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.bold),
+                                    )),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              isLoading
-                  ? Stack(
-                      children: [
-                        // Block interaction
-                        ModalBarrier(
-                            dismissible: false, color: Colors.transparent),
-                        // Loader indicator
-                        Center(
-                          child: CustomCircularProgress(),
-                        ),
-                      ],
-                    )
-                  : SizedBox(),
-            ],
+                  ],
+                ),
+                isLoading
+                    ? Stack(
+                        children: [
+                          // Block interaction
+                          ModalBarrier(
+                              dismissible: false, color: Colors.transparent),
+                          // Loader indicator
+                          Center(
+                            child: CustomCircularProgress(),
+                          ),
+                        ],
+                      )
+                    : SizedBox(),
+              ],
+            ),
           ),
         ),
       ),

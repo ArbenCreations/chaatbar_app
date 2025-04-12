@@ -1055,7 +1055,7 @@ class _CartScreenState extends State<CartScreen> {
                 database.categoryDao.clearAllCategories();
                 database.productDao.clearAllProducts();
                 database.cartDao.clearAllCartProduct();
-                Navigator.pushNamed(
+                Navigator.pushReplacementNamed(
                     context, '/RegisterScreen'); // Change route as needed
               },
             ),
