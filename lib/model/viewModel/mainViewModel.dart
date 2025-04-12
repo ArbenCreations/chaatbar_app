@@ -41,6 +41,7 @@ import '../request/successCallbackRequest.dart';
 import '../request/verifyOtpChangePass.dart';
 import '../response/ErrorResponse.dart';
 import '../response/PaymentDetailsResponse.dart';
+import '../response/StoreSettingResponse.dart';
 import '../response/createOrderResponse.dart';
 import '../response/createOtpChangePassResponse.dart';
 import '../response/dashboardDataResponse.dart';
@@ -633,6 +634,28 @@ class MainViewModel with ChangeNotifier {
     } catch (e) {
       _apiResponse = ApiResponse.error(e.toString().contains("<!DOCTYPE html>") ? "Something went wrong!" : e.toString());
       print(e);
+    }
+    notifyListeners();
+  }
+
+  Future<void> fetchStoreSettingData(String value) async {
+    _apiResponse = ApiResponse.loading('Loading');
+    notifyListeners();
+    try {
+      StoreSettingResponse storeSettingResponse =
+      await MainRepository().fetchStoreSettingData(value);
+      print("Yess" + storeSettingResponse.message.toString());
+
+      //_apiResponse = ApiResponse.completed(countryListResponse);
+      if (storeSettingResponse.status == 200 ||
+          storeSettingResponse.status == 201) {
+        _apiResponse = ApiResponse.completed(storeSettingResponse);
+      } else {
+        _apiResponse = ApiResponse.error(storeSettingResponse.message);
+      }
+    } catch (e) {
+      _apiResponse = ApiResponse.error(e.toString().contains("<!DOCTYPE html>") ? "Something went wrong!" : e.toString());
+      print(" catch ${e}");
     }
     notifyListeners();
   }

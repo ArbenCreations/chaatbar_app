@@ -223,31 +223,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 }
                               },
                               child: Container(
-                                width: 65,
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 10),
+                                height: 50,
+                                width: mediaWidth * 0.55,
+                                margin: EdgeInsets.symmetric(
+                                  vertical: 5,
+                                ),
                                 decoration: BoxDecoration(
+                                  color: AppColor.Primary,
                                   borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                      width: 0.2, color: Colors.white),
-                                  color: Colors.white,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Color.fromRGBO(0, 0, 0, 0.07),
-                                      offset: Offset(0, 1),
-                                      blurRadius: 5,
-                                      spreadRadius: 0.6,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: <Widget>[
+                                    Image.asset(
+                                      "assets/google_logo.png",
+                                      width: 22,
+                                      color: Colors.white,
+                                      fit: BoxFit.fill,
+                                    ),
+                                    Container(
+                                      margin: EdgeInsets.only(left: 8.0),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                          'Sign up with Google',
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold)),
                                     ),
                                   ],
                                 ),
-                                child: Center(
-                                    child: Container(
-                                  child: Image.asset(
-                                    "assets/googleLogo.png",
-                                    width: 24,
-                                    fit: BoxFit.fill,
-                                  ),
-                                )),
                               ),
                             ),
                           ),
@@ -710,10 +716,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         }
       },
       color: AppColor.ButtonBackColor,
-      minWidth: mediaWidth * 0.75,
+      minWidth: mediaWidth * 0.55,
       padding: EdgeInsets.symmetric(vertical: 12),
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(30)),
+          borderRadius: BorderRadius.all(Radius.circular(8)),
           side: BorderSide(width: 0.1, color: Colors.white)),
       child: Text(
         Languages.of(context)!.labelSignup,

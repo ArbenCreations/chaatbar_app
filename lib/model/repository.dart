@@ -20,6 +20,7 @@ import 'package:TheChaatBar/model/request/successCallbackRequest.dart';
 import 'package:TheChaatBar/model/request/vendorSearchRequest.dart';
 import 'package:TheChaatBar/model/request/verifyOtpChangePass.dart';
 import 'package:TheChaatBar/model/response/PaymentDetailsResponse.dart';
+import 'package:TheChaatBar/model/response/StoreSettingResponse.dart';
 import 'package:TheChaatBar/model/response/bannerListResponse.dart';
 import 'package:TheChaatBar/model/response/categoryListResponse.dart';
 import 'package:TheChaatBar/model/response/couponListResponse.dart';
@@ -367,6 +368,15 @@ class MainRepository {
     final jsonData = response;
     print(jsonData);
     ProfileResponse mediaList = ProfileResponse.fromJson(jsonData);
+    return mediaList;
+  }
+
+  Future<StoreSettingResponse> fetchStoreSettingData(String value) async {
+    dynamic response = await service.getResponse(value);
+    print(value);
+    final jsonData = response;
+    print(jsonData);
+    StoreSettingResponse mediaList = StoreSettingResponse.fromJson(jsonData);
     return mediaList;
   }
 }

@@ -94,11 +94,20 @@ class _CartScreenState extends State<CartScreen> {
     Helper.getVendorDetails().then((data) {
       setState(() {
         vendorId = int.parse("${data?.id ?? 0}");
+        //gst = int.parse("${data?.gst ?? 0}");
+        //pst = int.parse("${data?.pst ?? 0}");
+        //hst = int.parse("${data?.hst ?? 0}");
+      });
+    });
+
+    Helper.getStoreSettingDetails().then((data) {
+      setState(() {
         gst = int.parse("${data?.gst ?? 0}");
         pst = int.parse("${data?.pst ?? 0}");
         hst = int.parse("${data?.hst ?? 0}");
       });
     });
+
     Helper.getApiKey().then((data) {
       setState(() {
         apiKey = "12c12489-fc5f-253d-af89-270d4b68b87e"; //"${data ?? ""}";

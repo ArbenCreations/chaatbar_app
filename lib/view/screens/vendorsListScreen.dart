@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../model/apis/apiResponse.dart';
+import '../../model/response/StoreSettingResponse.dart';
 import '../../model/response/vendorListResponse.dart';
 import '../../model/viewModel/mainViewModel.dart';
 import '../../theme/CustomAppColor.dart';
@@ -127,8 +128,8 @@ class _VendorsListScreenState extends State<VendorsListScreen> {
                                         .paymentSetting?.apiKey);
                                     Helper.saveAppId(selectedLocalityData
                                         .paymentSetting?.appId);
-                                    Navigator.pushReplacementNamed(
-                                        context, "/BottomNavigation");
+                                    _getStoreSettingData(
+                                        selectedLocalityData);
                                   } else if (selectedLocalityData.status
                                           ?.contains("offline") ==
                                       true) {
@@ -377,6 +378,67 @@ class _VendorsListScreenState extends State<VendorsListScreen> {
         });
         //CustomAlert.showToast(context: context, message: "$token");
         return Container();
+      case Status.ERROR:
+        return Center(
+          child: Text('Please try again later!!!'),
+        );
+      case Status.INITIAL:
+      default:
+        return Center(
+          child: Text(''),
+        );
+    }
+  }
+
+  void _getStoreSettingData(VendorData selectedLocalityData) async {
+    setState(() {
+      isLoading = true;
+    });
+
+    bool isConnected = await _connectivityService.isConnected();
+    if (!isConnected) {
+      setState(() {
+        isLoading = false;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+            Text('${Languages.of(context)?.labelNoInternetConnection}'),
+            duration: maxDuration,
+          ),
+        );
+      });
+    } else {
+      await Future.delayed(Duration(milliseconds: 2));
+      await Provider.of<MainViewModel>(context, listen: false)
+          .fetchStoreSettingData(
+          "/api/v1/vendors/${selectedLocalityData.id}/vendor_store_setting");
+      ApiResponse apiResponse =
+          Provider.of<MainViewModel>(context, listen: false).response;
+      getVendorStoreSettingData(context, apiResponse);
+    }
+  }
+
+  Widget getVendorStoreSettingData(
+      BuildContext context, ApiResponse apiResponse)
+  {
+    StoreSettingResponse? storeSettingResponse =
+    apiResponse.data as StoreSettingResponse?;
+    var message = apiResponse.message.toString();
+    setState(() {
+      isLoading = false;
+    });
+    switch (apiResponse.status) {
+      case Status.LOADING:
+        return Center(child: CircularProgressIndicator());
+      case Status.COMPLETED:
+        print("rwrwr ${storeSettingResponse?.gst}");
+        Helper.saveStoreSettingData(storeSettingResponse);
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, "/BottomNavigation",
+              arguments: 1);
+        }
+
+        return Container(); // Return an empty container as you'll navigate away
       case Status.ERROR:
         return Center(
           child: Text('Please try again later!!!'),
