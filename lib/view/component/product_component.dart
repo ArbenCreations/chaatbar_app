@@ -42,7 +42,7 @@ class ProductComponent extends StatelessWidget {
         margin: EdgeInsets.only(top: 3, bottom: 4),
         padding: EdgeInsets.symmetric(horizontal: 0, vertical: 0),
         decoration: BoxDecoration(
-          color: Colors.grey.shade100,
+          color: Colors.transparent,
           borderRadius: BorderRadius.circular(15),
         ),
         child: Column(

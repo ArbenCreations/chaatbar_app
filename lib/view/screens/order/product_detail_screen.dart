@@ -1179,7 +1179,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                                                             borderRadius:
                                                                 BorderRadius
                                                                     .circular(
-                                                                        12.5)),
+                                                                    15)),
                                                         margin: EdgeInsets.zero,
                                                       ),
                                                     ),
