@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter/scheduler.dart';
+
 class CustomAlert {
   static void showToast({
     required BuildContext context,
@@ -9,9 +11,14 @@ class CustomAlert {
     if (message != null && message.isNotEmpty && message != "null") {
       showDialog(
         context: context,
-        builder: (BuildContext context) {
-          Future.delayed(duration, () {
-            Navigator.of(context, rootNavigator: true).pop(); // Auto close dialog
+        builder: (BuildContext dialogContext) {
+          // Schedule dialog auto-dismiss after current frame
+          SchedulerBinding.instance.addPostFrameCallback((_) {
+            Future.delayed(duration, () {
+              if (Navigator.of(dialogContext, rootNavigator: true).canPop()) {
+                Navigator.of(dialogContext, rootNavigator: true).pop();
+              }
+            });
           });
 
           return AlertDialog(
@@ -23,7 +30,7 @@ class CustomAlert {
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop();
+                  Navigator.of(dialogContext).pop();
                 },
                 child: const Text("OK"),
               ),
