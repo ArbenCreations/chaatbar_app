@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:apple_pay_flutter/apple_pay_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,12 +17,10 @@ import '../../../model/viewModel/mainViewModel.dart';
 import '../../../theme/CustomAppColor.dart';
 import '../../../utils/Helper.dart';
 import '../../../utils/Util.dart';
-import '../../component/ApplePayButton.dart';
 import '../../component/CustomAlert.dart';
 import '../../component/connectivity_service.dart';
 import '../../component/custom_circular_progress.dart';
 import '../../component/session_expired_dialog.dart';
-import '../../component/toastMessage.dart';
 
 class PaymentCardScreen extends StatefulWidget {
   final String? data;
@@ -284,7 +280,7 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
                             onTap: _onValidate,
                             child: _buildValidateButton(mediaWidth),
                           ),
-                        /*  Platform.isIOS
+                          /*  Platform.isIOS
                               ? ApplePayButton(
                                   onPressed: () {
                                     makePayment(); // your payment logic
@@ -321,7 +317,7 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
     List<PaymentItem> paymentItems = [
       PaymentItem(
           label: 'Label',
-          amount: double.parse("${widget.orderData?.order?.totalAmount}"),
+          amount: double.parse("${widget.orderData?.order?.payableAmount}"),
           shippingcharge: 0.0)
     ];
 
@@ -587,8 +583,8 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
       await Provider.of<MainViewModel>(context, listen: false)
           //.getFinalPaymentApi("https://scl-sandbox.dev.clover.com/v1/charges", "f2240939-d0fa-ccfd-88ff-2f14e160dc6a", transactionRequest);
           // await Provider.of<MainViewModel>(context, listen: false).getFinalPaymentApi("https://scl.clover.com/v1/charges", "$apiKey", transactionRequest);
-          .getFinalPaymentApi("https://scl.clover.com/v1/charges",
-          "$apiKey", transactionRequest);
+          .getFinalPaymentApi("https://scl.clover.com/v1/charges", "$apiKey",
+              transactionRequest);
       ApiResponse apiResponse =
           Provider.of<MainViewModel>(context, listen: false).response;
       getFinalPaymentApiResponse(context, apiResponse);

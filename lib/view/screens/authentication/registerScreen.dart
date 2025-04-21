@@ -2,11 +2,13 @@ import 'package:TheChaatBar/model/apis/apiResponse.dart';
 import 'package:TheChaatBar/model/request/signUpRequest.dart';
 import 'package:TheChaatBar/model/response/signUpInitializeResponse.dart';
 import 'package:TheChaatBar/model/viewModel/mainViewModel.dart';
+import 'package:TheChaatBar/view/component/toastMessage.dart';
 import 'package:TheChaatBar/view/screens/authentication/sign_in_with_google.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../languageSection/Languages.dart';
@@ -41,7 +43,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool inputValid = false;
   bool isDarkMode = false;
   String? deviceToken;
-  final _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -58,6 +60,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     inputValid = false;
     isDarkMode = false;
   }
+
+  final maskFormatter = MaskTextInputFormatter(
+    mask: '(###) ###-####',
+    filter: {"#": RegExp(r'[0-9]')},
+    type: MaskAutoCompletionType.lazy,
+  );
 
   void _isValidInput() {
     //print(input);
@@ -487,7 +495,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Widget _buildPhoneInput(BuildContext context, String text,
-      TextEditingController emailController, IconData icon) {
+      TextEditingController numberController, IconData icon) {
     return Container(
       width: mediaWidth,
       margin: EdgeInsets.symmetric(vertical: 6.0),
@@ -514,31 +522,44 @@ class _RegisterScreenState extends State<RegisterScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TextFormField(
-            controller: emailController,
+            controller: numberController,
             keyboardType: TextInputType.phone,
             textInputAction: TextInputAction.next,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            maxLength: 10,
+            inputFormatters: [maskFormatter],
+            maxLength: 12,
+            // "+1 " + 10 digits
             style: TextStyle(fontSize: 14),
             decoration: InputDecoration(
               border: InputBorder.none,
+              errorStyle: TextStyle(fontSize: 9, height: 0.5),
               errorBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.red, width: 0.4)),
-              hintText: text,
+                borderSide: BorderSide(color: Colors.red, width: 0.4),
+              ),
+              prefixText: '+1 ',
+              hintText: "(123) 456-7890",
               hintStyle: TextStyle(fontSize: 11, color: Colors.grey),
               counterText: "",
-              icon: Icon(
-                icon,
-                size: 14,
-              ),
+              icon: Icon(Icons.phone, size: 18),
             ),
             validator: (value) {
-              if (value == null || value.isEmpty || value.length != 10) {
-                return "Please enter a valid phone number";
+              if (value == null || value.trim().isEmpty) {
+                return 'Phone number is required';
               }
+
+              String digits = maskFormatter.getUnmaskedText();
+              final regex = RegExp(r'^[2-9]\d{2}[2-9]\d{2}\d{4}$'); // Canada
+
+              if (!regex.hasMatch(digits)) {
+                return 'Enter a valid Canadian phone number';
+              }
+
               return null;
             },
-          ),
+
+            onFieldSubmitted: (_) {
+              FocusScope.of(context).unfocus();
+            },
+          )
         ],
       ),
     );
@@ -573,6 +594,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           TextFormField(
             controller: nameController,
             style: TextStyle(fontSize: 14),
+            textInputAction: TextInputAction.next,
             decoration: InputDecoration(
               border: InputBorder.none,
               hintText: "Enter your $text",
@@ -763,6 +785,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           );
         });
       } else {
+        String cleanPhone = maskFormatter.getUnmaskedText();
+
         SignUpRequest request = SignUpRequest(
             customer: CustomerSignUp(
           deviceToken: "deviceToken",
@@ -770,7 +794,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           password: _passwordController.text,
           firstName: _nameController.text,
           lastName: _lastNameController.text,
-          phoneNumber: _phoneController.text,
+          phoneNumber: cleanPhone,
         ));
 
         await Provider.of<MainViewModel>(context, listen: false).signUpData(
@@ -819,8 +843,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         await Helper.savePassword(_passwordController.text);
 
         if (_phoneController.text.isNotEmpty) {
+          String cleanPhone = maskFormatter.getUnmaskedText();
           Navigator.pushNamed(context, "/OTPVerifyScreen",
-              arguments: "${_phoneController.text}");
+              arguments: "${cleanPhone}");
         } else {
           Navigator.pushNamed(context, "/OTPVerifyScreen",
               arguments: "${request.customer?.phoneNumber}");
@@ -845,6 +870,131 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _showModal(BuildContext context, User? user) {
+    final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+    final TextEditingController phoneController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              color: isDarkMode ? Colors.black : Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Please enter your phone number for verification",
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text("Signing up as: ${user?.displayName ?? 'Guest'}"),
+                  ),
+                  SizedBox(height: 4),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Email: ${user?.email ?? 'Not available'}",
+                      style: TextStyle(fontSize: 12, color: Colors.black54),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8.0),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10.0),
+                      color: isDarkMode
+                          ? AppColor.CardDarkColor
+                          : Colors.grey.shade100,
+                      border: Border.all(color: Colors.grey, width: 0.5),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.call,
+                          size: 16,
+                          color: isDarkMode ? Colors.white : Colors.black,
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: TextFormField(
+                            controller: phoneController,
+                            inputFormatters: [maskFormatter],
+                            keyboardType: TextInputType.phone,
+                            textInputAction: TextInputAction.done,
+                            style: TextStyle(fontSize: 13.0),
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              prefixText: '+1 ',
+                              hintText: "(123) 456-7890",
+                              hintStyle: TextStyle(fontSize: 13, color: Colors.grey),
+                            ),
+                            validator: (value) {
+                              String digits = maskFormatter.getUnmaskedText();
+                              final regex = RegExp(r'^[2-9]\d{2}[2-9]\d{2}\d{4}$'); // Canada
+                              if (digits.isEmpty) {
+                                return 'Phone number is required';
+                              } else if (!regex.hasMatch(digits)) {
+                                return 'Enter a valid Canadian phone number';
+                              }
+                              return null;
+                            },
+                            onFieldSubmitted: (_) {
+                              FocusScope.of(context).unfocus();
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  CustomButtonComponent(
+                    text: "Continue",
+                    mediaWidth: MediaQuery.of(context).size.width,
+                    textColor: Colors.white,
+                    buttonColor: AppColor.Primary,
+                    isDarkMode: isDarkMode,
+                    verticalPadding: 10,
+                    onTap: () {
+                      if (_formKey.currentState!.validate()) {
+                        String cleanPhone = maskFormatter.getUnmaskedText();
+                        _saveChanges(
+                          cleanPhone,
+                          "googlesign1",
+                          context,
+                          user,
+                        );
+                        //Navigator.pop(context); // Close the bottom sheet
+                      }
+                    },
+                  ),
+                  SizedBox(height: 10),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+
+
+/*void _showModal(BuildContext context, User? user) {
     showDialog<void>(
         context: context,
         barrierDismissible: true,
@@ -939,5 +1089,5 @@ class _RegisterScreenState extends State<RegisterScreen> {
             actionsAlignment: MainAxisAlignment.center,
           );
         });
-  }
+  }*/
 }

@@ -113,7 +113,7 @@ class FeaturedProductComponent extends StatelessWidget {
                       children: [
                         SizedBox(height: 2),
                         // Category Tag
-                        Container(
+                        /*  Container(
                           padding:
                               EdgeInsets.symmetric(vertical: 2, horizontal: 6),
                           decoration: BoxDecoration(
@@ -122,14 +122,14 @@ class FeaturedProductComponent extends StatelessWidget {
                           ),
                           child: Text(
                             capitalizeFirstLetter(
-                                "${data.categoryName ?? "Fast Food"}"),
+                                "${data.status ?? ""}"),
                             style: TextStyle(
                                 fontSize: 11, fontWeight: FontWeight.bold),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-
-                        SizedBox(height: 2),
+*/
+                        SizedBox(height: 6),
 
                         // Product Title
                         Text(

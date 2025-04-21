@@ -11,6 +11,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../languageSection/Languages.dart';
@@ -44,12 +45,14 @@ class _LoginScreenState extends State<LoginScreen> {
   String? deviceToken;
   bool isLogin = true;
   static const maxDuration = Duration(seconds: 2);
+  String _appVersion = '';
 
   @override
   void initState() {
     super.initState();
     passwordVisible = true;
     inputValid = false;
+    _loadAppVersion();
     // Setup interaction with notifications
     // PushNotificationService().setupInteractedMessage();
     // Helper.getFirebaseToken().then((token) {
@@ -73,6 +76,14 @@ class _LoginScreenState extends State<LoginScreen> {
       });
     }
   }
+
+  Future<void> _loadAppVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    setState(() {
+      _appVersion = '${info.version} (${info.buildNumber})';
+    });
+  }
+
 
   void _checkValidInput() {
     String email = _emailController.text.trim();
@@ -174,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Align(
                     alignment: Alignment.bottomCenter,
                     child: Container(
-                      margin: EdgeInsets.only(top: 10, bottom: 20),
+                      margin: EdgeInsets.only(top: 10, bottom: 30),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.end,
@@ -205,6 +216,23 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ],
                               ),
                             ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      margin: EdgeInsets.only(bottom: 15),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            'Version $_appVersion',
+                            style: TextStyle(
+                                color: Colors.grey[400], fontSize: 12),
                           ),
                         ],
                       ),
@@ -484,6 +512,7 @@ class _LoginScreenState extends State<LoginScreen> {
               inputFormatters: [
                 FilteringTextInputFormatter.singleLineFormatter
               ],
+              textInputAction: TextInputAction.next,
               maxLength: 30,
               style: TextStyle(fontSize: 14),
               decoration: InputDecoration(

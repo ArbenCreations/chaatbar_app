@@ -25,7 +25,6 @@ import '../../component/CustomAlert.dart';
 import '../../component/DashedLine.dart';
 import '../../component/connectivity_service.dart';
 import '../../component/custom_circular_progress.dart';
-import '../../component/toastMessage.dart';
 
 class CartScreen extends StatefulWidget {
   @override
@@ -77,6 +76,7 @@ class _CartScreenState extends State<CartScreen> {
   Color primaryColor = AppColor.Primary;
   Color? secondaryColor = Colors.red[100];
   Color? lightColor = Colors.red[50];
+  String? storeStatus = "";
 
   @override
   void initState() {
@@ -94,9 +94,8 @@ class _CartScreenState extends State<CartScreen> {
     Helper.getVendorDetails().then((data) {
       setState(() {
         vendorId = int.parse("${data?.id ?? 0}");
-        //gst = int.parse("${data?.gst ?? 0}");
-        //pst = int.parse("${data?.pst ?? 0}");
-        //hst = int.parse("${data?.hst ?? 0}");
+        storeStatus = data?.status ?? "online";
+        isStoreOnline = storeStatus == "offline" ? false : true;
       });
     });
 
@@ -105,6 +104,7 @@ class _CartScreenState extends State<CartScreen> {
         gst = int.parse("${data?.gst ?? 0}");
         pst = int.parse("${data?.pst ?? 0}");
         hst = int.parse("${data?.hst ?? 0}");
+        IsUpcomingAllowed = data?.upcomingOrReserveDay ?? false;
       });
     });
 
@@ -167,7 +167,7 @@ class _CartScreenState extends State<CartScreen> {
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (bool didPop) {
+      onPopInvokedWithResult: (bool didPop, Object? result) async {
         if (didPop) {
           return;
         }
@@ -436,43 +436,105 @@ class _CartScreenState extends State<CartScreen> {
                               ),
                             ),
                           ),
-                          GestureDetector(
-                            onTap: () {
-                              cartDataDao.clearAllCartProduct();
-                              getCartData();
-                              getCartTotal();
-                            },
-                            child: IntrinsicWidth(
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: 4, horizontal: 8),
-                                decoration: BoxDecoration(
-                                    color: Colors.red,
-                                    borderRadius: BorderRadius.circular(5)),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.delete_outline,
-                                      size: 16,
-                                      color: Colors.white,
+                          Container(
+                            color: AppColor.BackgroundColor,
+                            padding: EdgeInsets.only(bottom: 5),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Align(
+                                  alignment: Alignment.topRight,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      Navigator.pushNamed(
+                                          context, "/BottomNavigation",
+                                          arguments: 1);
+                                    },
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                          vertical: 6, horizontal: 10),
+                                      margin: EdgeInsets.only(right: 10),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.shade100,
+                                        borderRadius: BorderRadius.circular(10),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.withOpacity(0.3),
+                                            blurRadius: 8,
+                                            offset: Offset(0, 3),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.add,
+                                            color: Colors.black,
+                                            size: 14,
+                                          ),
+                                          SizedBox(width: 2),
+                                          Text(
+                                            "Add items",
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.w600,
+                                              letterSpacing: 0.5,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                    SizedBox(
-                                      width: 4,
-                                    ),
-                                    Text(
-                                      "Clear Cart",
-                                      maxLines: 2,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                          fontSize: 11,
-                                          color: Colors.white,
-                                          decoration: TextDecoration.underline,
-                                          decorationColor: Colors.red,
-                                          fontWeight: FontWeight.w500),
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                              ),
+                                GestureDetector(
+                                  onTap: () {
+                                    cartDataDao.clearAllCartProduct();
+                                    getCartData();
+                                    getCartTotal();
+                                  },
+                                  child: IntrinsicWidth(
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                          vertical: 6, horizontal: 10),
+                                      margin: EdgeInsets.only(right: 10),
+                                      decoration: BoxDecoration(
+                                        color: Colors.redAccent.shade200,
+                                        borderRadius: BorderRadius.circular(10),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.red.withOpacity(0.3),
+                                            blurRadius: 8,
+                                            offset: Offset(0, 3),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.remove_shopping_cart_outlined,
+                                            color: Colors.white,
+                                            size: 16,
+                                          ),
+                                          SizedBox(width: 6),
+                                          Text(
+                                            "Clear Cart",
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w600,
+                                              letterSpacing: 0.5,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                           SizedBox(
@@ -841,7 +903,7 @@ class _CartScreenState extends State<CartScreen> {
                                         Text(
                                           '\$${grandTotal.toStringAsFixed(2)}',
                                           style: TextStyle(
-                                              fontSize: 14,
+                                              fontSize: 15,
                                               fontWeight: FontWeight.bold,
                                               color: isDarkMode
                                                   ? Colors.white60
@@ -902,7 +964,7 @@ class _CartScreenState extends State<CartScreen> {
                                                                         "/OrderSuccessfulScreen"
                                                                       );*/
                                                   //_getApiAccessKey();
-                                              _createOrder(
+                                                  _createOrder(
                                                       GetApiAccessKeyResponse(
                                                           active: true,
                                                           apiAccessKey:
@@ -1090,7 +1152,7 @@ class _CartScreenState extends State<CartScreen> {
                   ? '-\$ $detail'
                   : '\$ $detail',
               style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 13,
                   color: isDarkMode ? Colors.white60 : Colors.black87),
             ),
           ),

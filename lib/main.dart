@@ -10,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import 'languageSection/AppLocalizationsDelegate.dart';
@@ -27,7 +26,6 @@ import 'model/viewModel/mainViewModel.dart';
 import 'theme/CustomAppColor.dart';
 import 'theme/CustomAppTheme.dart';
 import 'view/component/my_navigator_observer.dart';
-import 'view/component/toastMessage.dart';
 import 'view/screens/authentication/forgotPassword/otp_forgot_pass_screen.dart';
 import 'view/screens/authentication/loginScreen.dart';
 import 'view/screens/authentication/otpVerifyScreen.dart';
@@ -51,80 +49,19 @@ import 'view/screens/porfile/profile_screen.dart';
 import 'view/screens/vendor_screen.dart';
 import 'view/screens/vendorsListScreen.dart';
 
-@pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
-  await setupFlutterNotifications();
-  print('Handling a background message ${message.messageId}');
-}
-
-late AndroidNotificationChannel channel;
-bool isFlutterLocalNotificationsInitialized = false;
-
-Future<void> setupFlutterNotifications() async {
-  if (isFlutterLocalNotificationsInitialized) {
-    return;
-  }
-  channel = const AndroidNotificationChannel(
-    'high_importance_channel', // id
-    'High Importance Notifications', // title
-    description: 'This channel is used for important notifications.',
-    importance: Importance.high,
-  );
-
-  flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
-  await flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
-      ?.createNotificationChannel(channel);
-
-  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-    alert: true,
-    badge: true,
-    sound: true,
-  );
-  isFlutterLocalNotificationsInitialized = true;
-}
-
-late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  //Initialize Firebase
   await Firebase.initializeApp();
-
-  // Handle background messages
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-  // Setup interaction with notifications
-  await PushNotificationService().setupInteractedMessage();
-
-  // Request notification permissions
-  final permissionStatus = await Permission.notification.status;
-  if (permissionStatus.isDenied) {
-    await Permission.notification.request();
-  }
-
-  var retrievedToken = await Helper.getUserToken();
-  // Get initial message
-  RemoteMessage? initialMessage =
-      await FirebaseMessaging.instance.getInitialMessage();
-  if (initialMessage != null) {
-    print("FirebaseMessaging:: $initialMessage");
-  }
 
   // Set preferred orientations and run app
   await SystemChrome.setPreferredOrientations(
       [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
-  runApp(MyApp(initialMessage: null));
-
   // Clear all notifications when app is resumed or opened
   WidgetsBinding.instance.addPostFrameCallback((_) {
     FlutterLocalNotificationsPlugin().cancelAll();
   });
+  runApp(MyApp());
 }
 
 class MyApp extends StatefulWidget {
@@ -161,22 +98,6 @@ class _MyAppState extends State<MyApp> {
   void _toggleTheme(ThemeMode themeMode) {
     setState(() {
       _themeMode = themeMode;
-    });
-  }
-
-  void setupNotificationHandlers(BuildContext context) {
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      CustomAlert.showToast(context: context, message: "$message");
-      // Navigate to the ProfileScreen when the notification is clicked
-      final notificationResponse =
-          NotificationOtpResponse.fromJson(message.data);
-      /* Navigator.push(
-        navigatorKey.currentState!.context,
-        MaterialPageRoute(
-            builder: (context) => NotificationOtpScreen(
-              data: notificationResponse,
-            )),
-      );*/
     });
   }
 

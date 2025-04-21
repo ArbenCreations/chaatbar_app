@@ -3,8 +3,6 @@ import 'dart:convert';
 import 'package:TheChaatBar/model/database/dao.dart';
 import 'package:TheChaatBar/model/response/productDataDB.dart';
 import 'package:TheChaatBar/model/response/productListResponse.dart';
-
-import 'package:TheChaatBar/view/component/toastMessage.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -18,9 +16,9 @@ import '../../../../model/response/bannerListResponse.dart';
 import '../../../../model/response/categoryDataDB.dart';
 import '../../../../model/response/categoryListResponse.dart';
 import '../../../../model/response/markFavoriteResponse.dart';
-import '../../../model/response/vendorListResponse.dart';
-import '../../../../theme/CustomAppColor.dart';
 import '../../../../model/viewModel/mainViewModel.dart';
+import '../../../../theme/CustomAppColor.dart';
+import '../../../model/response/vendorListResponse.dart';
 import '../../../utils/Helper.dart';
 import '../../../utils/Util.dart';
 import '../../component/CustomAlert.dart';
@@ -67,6 +65,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
   List<ProductData> cart = []; // Cart holds selected MenuItems
   List<ProductSize> productSizeList = [];
   List<AddOnCategory> addOnList = [];
+  List<AddOnCategory> cartAddOnList = [];
+  List<AddOnDetails> addOnDetails = [];
 
   bool isLoading = false;
   bool isMarkFavLoading = false;
@@ -118,13 +118,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
       productSizeList = widget.data?.getProductSizeList() ?? [];
       checkedStates = List<bool>.filled(productSizeList.length, false);
       addOnList = widget.data?.getAddOnList() ?? [];
-      addOnList.forEach((item) {
+      /* addOnList.forEach((item) {
         if (item.addOnCategoryType == "single") {
           item.selectedAddOnIdInSingleType = item.addOns?[0].id;
         } else {
           item.addOns?[0].isSelected = true;
         }
-      });
+      });*/
     });
   }
 
@@ -145,11 +145,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return PopScope(
       canPop: false,
-      onPopInvoked: (bool didPop) {
+      onPopInvokedWithResult: (bool didPop, Object? result) async {
         if (didPop) {
           return;
         }
-        Navigator.pushNamed(context, "/BottomNavigation");
+        // Navigate to the home view when back navigation is attempted
+        Navigator.pushReplacementNamed(context, "/BottomNavigation");
       },
       child: Scaffold(body: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints viewportConstraints) {
@@ -212,8 +213,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                 builder: (context, scrollController) {
                   return Container(
                     decoration: BoxDecoration(
-                      color:
-                          isDarkMode ? AppColor.CardDarkColor : Colors.white,
+                      color: isDarkMode ? AppColor.CardDarkColor : Colors.white,
                       borderRadius: BorderRadius.vertical(
                         top: Radius.circular(20),
                       ),
@@ -288,8 +288,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                                                           FontWeight.bold,
                                                       color: isDarkMode
                                                           ? Colors.white
-                                                              .withOpacity(
-                                                                  0.8)
+                                                              .withOpacity(0.8)
                                                           : Colors.grey[800]),
                                                   overflow:
                                                       TextOverflow.visible,
@@ -304,8 +303,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                                                       fontSize: 11,
                                                       color: isDarkMode
                                                           ? Colors.white
-                                                              .withOpacity(
-                                                                  0.7)
+                                                              .withOpacity(0.7)
                                                           : Colors.grey[500]),
                                                   overflow:
                                                       TextOverflow.visible,
@@ -376,8 +374,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                                                               "${widget.data?.quantity}") >
                                                           0) {
                                                         if (widget.data
+                                                            ?.isBuy1Get1 !=
+                                                            null &&
+                                                            widget.data
                                                                 ?.isBuy1Get1 ==
-                                                            true) {
+                                                                true) {
                                                           widget.data
                                                                   ?.quantity =
                                                               int.parse(
@@ -442,9 +443,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                                                   onTap: () {
                                                     // if(addOnList.)
                                                     setState(() {
-                                                      if (widget.data
-                                                              ?.isBuy1Get1 ==
-                                                          false) {
+                                                      if (widget.data?.isBuy1Get1 ==
+                                                          null ||
+                                                          widget.data?.isBuy1Get1 ==
+                                                              false) {
                                                         if (int.parse(
                                                                 "${widget.data?.quantity}") <
                                                             int.parse(
@@ -1179,7 +1181,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                                                             borderRadius:
                                                                 BorderRadius
                                                                     .circular(
-                                                                    15)),
+                                                                        15)),
                                                         margin: EdgeInsets.zero,
                                                       ),
                                                     ),
@@ -1738,13 +1740,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
 
     //_fetchCategoryData();
     getCartData();
-    getProductDataDB("${widget.data?.productCategoryId}");
-    getCategoryDataDB();
+    //getProductDataDB("${widget.data?.productCategoryId}");
+    //getCategoryDataDB();
   }
 
   Future<void> getCartData() async {
     List<ProductDataDB?> productsList = await cartDataDao.findAllCartProducts();
-    // print("getCartData");
+    print("getCartData");
     setState(() {
       List<ProductData> list = [];
       productsList.forEach((item) {
@@ -1781,6 +1783,62 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
               addOnIdsList: '',
               productSizesList: item.productSizesList));
           cartDBList = list;
+          print("##${cartDBList.first.addOn}");
+          //addOnList.addAll(cartDBList.first.getAddOnList());
+        }
+      });
+      cartDBList.forEach((cart) {
+        cartAddOnList = cart.getAddOnList();
+      });
+      cartAddOnList.forEach((item) {
+        if (item.addOnCategoryType == "single") {
+          item.selectedAddOnIdInSingleType = item.addOns?.first.id;
+          /*  item.addOns?.forEach((addOn){
+            addOnDetails.add(addOn);
+            //addOn.isSelected = true;
+          });*/
+        } else {
+          print("CartAddon:::${"${item.addOns?.length}"}");
+          item.addOns?.forEach((addOn) {
+            addOnDetails.add(addOn);
+            //addOn.isSelected = true;
+          });
+        }
+      });
+      addOnList.forEach((item) {
+        print("CartAddon:::${"${item.addOnCategoryType}"}");
+        if (item.addOnCategoryType == "single") {
+          print("AddOnCategoryType:::${"${item.addOnCategoryType}"}");
+          if (cartAddOnList.length > 0) {
+            cartAddOnList.forEach((addOn) {
+              print("CartAddOnList:::${"${addOn.addOns?.first.id}"}");
+              item.selectedAddOnIdInSingleType = addOn.addOns?.first.id;
+            });
+          } else {
+            item.selectedAddOnIdInSingleType = addOnList[0].addOns?.first.id;
+          }
+          //item.selectedAddOnIdInSingleType = item.addOns?[0].id;
+        } else {
+          if (item.addOns != null && item.addOns!.isNotEmpty) {
+            final hasCartAddOns = cartAddOnList.isNotEmpty;
+            bool hasAnyMatch = false;
+
+            for (var addOn in item.addOns!) {
+              if (hasCartAddOns) {
+                final isMatch = addOnDetails.any((cartAddOn) => cartAddOn.id == addOn.id);
+                addOn.isSelected = isMatch;
+                if (isMatch) hasAnyMatch = true;
+              } else {
+                addOn.isSelected = false;
+              }
+            }
+
+            // If no matches found or cart list is empty, select the first add-on
+            if (!hasAnyMatch) {
+              item.addOns!.first.isSelected = true;
+            }
+          }
+
         }
       });
     });
@@ -1812,7 +1870,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
           isCategoryLoading = false;
           getProductDataDB("${widget.data?.productCategoryId}");
         });
-        _fetchCategoryData();
+        //_fetchCategoryData();
       } else {
         setState(() {
           isLoading = true;
@@ -1860,10 +1918,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
             vendorId == dbItem.vendorId) {
           setState(() {
             item.quantity = dbItem.quantity;
+            addOnList.addAll(dbItem.getAddOnList());
           });
         }
       });
     });
+
     getCartItemCountDB();
   }
 

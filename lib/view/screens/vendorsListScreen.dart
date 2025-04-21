@@ -271,7 +271,7 @@ class _VendorsListScreenState extends State<VendorsListScreen> {
                   ),
                   item.status?.contains("online") == true
                       ? _buildStatusBadge("Open", Colors.green)
-                      : _buildStatusBadge("Close", Colors.red),
+                      : _buildStatusBadge("Closed", Colors.red),
                 ],
               ),
             ),
