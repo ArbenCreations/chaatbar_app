@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:TheChaatBar/model/apis/apiResponse.dart';
 import 'package:TheChaatBar/model/request/signUpRequest.dart';
+import 'package:TheChaatBar/model/response/loginResponse.dart';
 import 'package:TheChaatBar/model/response/signUpInitializeResponse.dart';
 import 'package:TheChaatBar/model/viewModel/mainViewModel.dart';
 import 'package:TheChaatBar/view/component/toastMessage.dart';
@@ -14,11 +17,15 @@ import 'package:provider/provider.dart';
 import '../../../../languageSection/Languages.dart';
 import '../../../../theme/CustomAppColor.dart';
 import '../../../../utils/Helper.dart';
+import '../../../model/request/signInRequest.dart';
+import '../../../model/response/profileResponse.dart';
+import '../../../model/services/AuthenticationProvider.dart';
 import '../../../utils/Util.dart';
 import '../../component/CustomAlert.dart';
 import '../../component/connectivity_service.dart';
 import '../../component/custom_button_component.dart';
 import '../../component/custom_circular_progress.dart';
+import 'loginScreen.dart';
 
 class RegisterScreen extends StatefulWidget {
   final String? userId; // Define the 'data' parameter here
@@ -272,6 +279,56 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 ),
                               ),
                             ),
+                            Platform.isIOS
+                                ? SizedBox(
+                                    width: mediaWidth * 0.55,
+                                    child: GestureDetector(
+                                      onTap: () async {
+                                        User? user = await context
+                                            .read<AuthenticationProvider>()
+                                            .signInWithApple();
+                                        if (user != null) {
+                                          bool isEmailRelay = user.email?.endsWith(
+                                                  "@privaterelay.appleid.com") ??
+                                              true;
+                                          bool isNameMissing =
+                                              user.displayName == null ||
+                                                  user.displayName!.isEmpty;
+                                          _appleSignIn(user, true);
+                                        } else {
+                                          print(
+                                              "Apple sign-in failed or was canceled.");
+                                        }
+                                      },
+                                      child: Container(
+                                        height: 50,
+                                        decoration: BoxDecoration(
+                                          color: Colors.black,
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.apple,
+                                                color: Colors.white),
+                                            SizedBox(width: 10),
+                                            Text(
+                                              'Continue with Apple',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 14,
+                                                // <- Change text size here
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                : SizedBox(),
                             SizedBox(
                               height: 20,
                             ),
@@ -325,6 +382,114 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _appleSignIn(User? user, bool isAppleLogin) async {
+    hideKeyBoard();
+    setState(() {
+      isLoading = true;
+    });
+    if (inputValid || user != null) {
+      SignInRequest signInRequest = SignInRequest(
+          customer: CustomerSignIn(
+        deviceToken: "${deviceToken}",
+        email: user != null ? "${user.email}" : _emailController.text,
+        password: user != null ? "applesign1" : _passwordController.text,
+      ));
+      bool isConnected = await _connectivityService.isConnected();
+      if (!isConnected) {
+        setState(() {
+          isLoading = false;
+          CustomToast.showToast(
+              context: context,
+              message: '${Languages.of(context)?.labelNoInternetConnection}');
+        });
+      } else {
+        await Provider.of<MainViewModel>(context, listen: false)
+            .signInWithPass("/api/v1/app/customers/sign_in", signInRequest);
+
+        ApiResponse apiResponse =
+            Provider.of<MainViewModel>(context, listen: false).response;
+        getAppleSignInResponse(context, apiResponse, user);
+      }
+    }
+  }
+
+  Future<Widget> getAppleSignInResponse(
+      BuildContext context, ApiResponse apiResponse, User? user) async {
+    LoginResponse? mediaList = apiResponse.data as LoginResponse?;
+    setState(() {
+      isLoading = false;
+    });
+    switch (apiResponse.status) {
+      case Status.LOADING:
+        return Center(child: CircularProgressIndicator());
+      case Status.COMPLETED:
+        print("GetSignInResponse : ${mediaList}");
+
+        ProfileResponse data = ProfileResponse(
+          phoneNumber: mediaList?.customer?.phoneNumber,
+          id: mediaList?.customer?.id,
+          email: mediaList?.customer?.email,
+          lastName: mediaList?.customer?.lastName,
+          firstName: mediaList?.customer?.firstName,
+        );
+        Helper.saveProfileDetails(data);
+        String token = "${mediaList?.token}";
+        bool isSaved = await Helper.saveUserToken(token);
+
+        // Check if the token was saved successfully
+        if (isSaved) {
+          print('Token saved successfully.');
+        } else {
+          print('Failed to save token.');
+        }
+
+        await Helper.savePassword("applesign1");
+        String? password = await Helper.getPassword();
+        print("password: ${password}");
+        Navigator.pushReplacementNamed(context, "/VendorsListScreen",
+            arguments: "");
+
+        return Container(); // Return an empty container as you'll navigate away
+      case Status.ERROR:
+        print("message : ${apiResponse.message}");
+        if (apiResponse.message == "Invalid email or password") {
+          //showUserDetailsBottomSheet(context, user);
+          _showSignUpBottomSheet(context, user);
+        } else {
+          CustomAlert.showToast(context: context, message: apiResponse.message);
+        }
+
+        return Center();
+      case Status.INITIAL:
+      default:
+        return Center();
+    }
+  }
+
+  void _showSignUpBottomSheet(BuildContext context, User? user) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      enableDrag: true,
+      constraints: BoxConstraints(
+          maxHeight: screenHeight * 0.8, minHeight: screenHeight * 0.8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 20,
+            right: 20,
+            top: 20,
+          ),
+          child: SignUpForm(user),
+        );
+      },
     );
   }
 
@@ -902,7 +1067,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   SizedBox(height: 10),
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: Text("Signing up as: ${user?.displayName ?? 'Guest'}"),
+                    child:
+                        Text("Signing up as: ${user?.displayName ?? 'Guest'}"),
                   ),
                   SizedBox(height: 4),
                   Align(
@@ -941,11 +1107,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               border: InputBorder.none,
                               prefixText: '+1 ',
                               hintText: "(123) 456-7890",
-                              hintStyle: TextStyle(fontSize: 13, color: Colors.grey),
+                              hintStyle:
+                                  TextStyle(fontSize: 13, color: Colors.grey),
                             ),
                             validator: (value) {
                               String digits = maskFormatter.getUnmaskedText();
-                              final regex = RegExp(r'^[2-9]\d{2}[2-9]\d{2}\d{4}$'); // Canada
+                              final regex = RegExp(
+                                  r'^[2-9]\d{2}[2-9]\d{2}\d{4}$'); // Canada
                               if (digits.isEmpty) {
                                 return 'Phone number is required';
                               } else if (!regex.hasMatch(digits)) {
@@ -991,8 +1159,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       },
     );
   }
-
-
 
 /*void _showModal(BuildContext context, User? user) {
     showDialog<void>(

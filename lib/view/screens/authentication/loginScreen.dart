@@ -387,7 +387,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               Icon(Icons.apple, color: Colors.white),
                               SizedBox(width: 10),
                               Text(
-                                'Sign in with Apple',
+                                'Continue with Apple',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 14,
@@ -1181,112 +1181,126 @@ class _SignUpFormState extends State<SignUpForm> {
     super.dispose();
   }
 
-  @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Form(
-        key: _formKey,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
-        // 🔄 Real-time validation
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                height: 5,
-                width: 50,
-                margin: EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
-            Center(
-              child: Text(
-                'Sign Up',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-            ),
-            SizedBox(height: 20),
-            Text("First Name"),
-            TextFormField(
-              controller: firstNameController,
-              decoration: InputDecoration(
-                hintText: "Required",
-                border: UnderlineInputBorder(),
-              ),
-              validator: (value) => value == null || value.trim().isEmpty
-                  ? 'First name is required'
-                  : null,
-            ),
-            SizedBox(height: 8),
-            Text("Last Name"),
-            TextFormField(
-              controller: lastNameController,
-              decoration: InputDecoration(
-                hintText: "Required",
-                border: UnderlineInputBorder(),
-              ),
-              validator: (value) => value == null || value.trim().isEmpty
-                  ? 'Last name is required'
-                  : null,
-            ),
-            SizedBox(height: 8),
-            Text("Email"),
-            Text(
-              widget.user?.email ?? "",
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-            SizedBox(
-              height: 8,
-            ),
-            Text("Phone"),
-            TextFormField(
-              controller: phoneController,
-              keyboardType: TextInputType.phone,
-              inputFormatters: [maskFormatter],
-              decoration: InputDecoration(
-                prefixText: '+1 ',
-                hintText: "(123) 456-7890",
-                border: UnderlineInputBorder(),
-              ),
-              validator: (value) {
-                String digits = maskFormatter.getUnmaskedText();
-                final regex = RegExp(r'^[2-9]\d{2}[2-9]\d{2}\d{4}$'); // Canada
-                if (digits.isEmpty) {
-                  return 'Phone number is required';
-                } else if (!regex.hasMatch(digits)) {
-                  return 'Enter a valid Canadian phone number';
-                }
-                return null;
-              },
-            ),
-            SizedBox(height: 10),
-            Text(
-              "Your number lets TheChaiBar and Admin contact you about orders. It’s masked to help protect your privacy.",
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-            ),
-            SizedBox(height: 20),
-            isLoading
-                ? Center(child: CircularProgressIndicator())
-                : ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                      minimumSize: Size(double.infinity, 50),
-                    ),
-                    onPressed: _handleSubmit,
-                    child: Text(
-                      "Sign Up",
-                      style: TextStyle(color: Colors.white),
+    return LayoutBuilder(builder: (context, constraints) {
+      return SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: Form(
+            key: _formKey,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            // 🔄 Real-time validation
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    height: 5,
+                    width: 50,
+                    margin: EdgeInsets.only(bottom: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-          ],
+                ),
+                Center(
+                  child: Text(
+                    'Sign Up',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                SizedBox(height: 20),
+                Text("First Name"),
+                TextFormField(
+                  controller: firstNameController,
+                  decoration: InputDecoration(
+                    hintText: "Required",
+                    border: UnderlineInputBorder(),
+                  ),
+                  enabled: false,
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? 'First name is required'
+                      : null,
+                ),
+                SizedBox(height: 8),
+                Text("Last Name"),
+                TextFormField(
+                  controller: lastNameController,
+                  decoration: InputDecoration(
+                    hintText: "Required",
+                    border: UnderlineInputBorder(),
+                  ),
+                  enabled: false,
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? 'Last name is required'
+                      : null,
+                ),
+                SizedBox(height: 8),
+                Text("Email"),
+                Text(
+                  widget.user?.email ?? "",
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+                SizedBox(
+                  height: 8,
+                ),
+                Text("Phone"),
+                TextFormField(
+                  controller: phoneController,
+                  keyboardType: TextInputType.phone,
+                  textInputAction: TextInputAction.done,
+                  // 👈 This adds the "Done" button
+                  inputFormatters: [maskFormatter],
+                  decoration: InputDecoration(
+                    prefixText: '+1 ',
+                    hintText: "(123) 456-7890",
+                    border: UnderlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    String digits = maskFormatter.getUnmaskedText();
+                    final regex =
+                    RegExp(r'^[2-9]\d{2}[2-9]\d{2}\d{4}$'); // Canada
+                    if (digits.isEmpty) {
+                      return 'Phone number is required';
+                    } else if (!regex.hasMatch(digits)) {
+                      return 'Enter a valid Canadian phone number';
+                    }
+                    return null;
+                  },
+                  onFieldSubmitted: (_) {
+                    FocusScope.of(context).unfocus();
+                  },
+                ),
+                SizedBox(height: 10),
+                Text(
+                  "Your number lets TheChaiBar and Admin contact you about orders. It’s masked to help protect your privacy.",
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
+                SizedBox(height: 20),
+                /*
+                isLoading
+                    ? CustomCircularProgress()
+                    :*/
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    minimumSize: Size(double.infinity, 50),
+                  ),
+                  onPressed: _handleSubmit,
+                  child: Text(
+                    "Sign Up",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 }
