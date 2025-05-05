@@ -72,18 +72,18 @@ class _BannerListWidgetState extends State<BannerListWidget> {
         color: widget.isDarkMode ? AppColor.CardDarkColor : Colors.white,
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(10),
         child: image.toString().isEmpty
             ? Image.asset(
                 image!,
                 width: mediaWidth * 0.95,
-                height: screenHeight * 0.25,
+                height: screenHeight * 0.2,
                 fit: BoxFit.none,
               )
             : CachedNetworkImage(
                 imageUrl: image!,
                 width: mediaWidth * 0.95,
-                height: screenHeight * 0.25,
+                height: screenHeight * 0.2,
                 fit: BoxFit.cover,
                 placeholder: (context, url) {
                   return Shimmer.fromColors(
@@ -93,7 +93,7 @@ class _BannerListWidgetState extends State<BannerListWidget> {
                         : Colors.grey,
                     child: Container(
                       width: mediaWidth * 0.95,
-                      height: screenHeight * 0.25,
+                      height: screenHeight * 0.2,
                       decoration: BoxDecoration(
                         color: widget.isDarkMode
                             ? AppColor.CardDarkColor
@@ -134,7 +134,7 @@ class _BannerListWidgetState extends State<BannerListWidget> {
         Container(
           margin: EdgeInsets.only(bottom: 0, top: 8),
           width: mediaWidth,
-          height: screenHeight * 0.2,
+          height: screenHeight * 0.15,
           child: PageView.builder(
             controller: _pageController,
             onPageChanged: (page) => setState(() => _currentPage = page),
@@ -147,7 +147,7 @@ class _BannerListWidgetState extends State<BannerListWidget> {
                   child: Card(
                     color: Colors.white.withOpacity(0.8),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)),
+                        borderRadius: BorderRadius.circular(10)),
                     margin: EdgeInsets.zero,
                     child: Stack(
                       children: [
@@ -161,12 +161,12 @@ class _BannerListWidgetState extends State<BannerListWidget> {
           ),
         ),
         Positioned(
-          bottom: 0,
-          left: 22,
+          bottom: 5,
+          left: mediaWidth * 0.45,
           child: Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               color: Colors.black54,
             ),
             child: SmoothPageIndicator(

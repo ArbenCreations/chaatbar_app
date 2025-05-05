@@ -1,7 +1,6 @@
 import 'package:TheChaatBar/model/database/ChaatBarDatabase.dart';
 import 'package:TheChaatBar/model/request/editProfileRequest.dart';
 import 'package:TheChaatBar/model/response/couponListResponse.dart';
-import 'package:TheChaatBar/view/component/toastMessage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -12,6 +11,7 @@ import '../../../../model/viewModel/mainViewModel.dart';
 import '../../../../theme/CustomAppColor.dart';
 import '../../../../utils/Helper.dart';
 import '../../../../utils/Util.dart';
+import '../../../model/database/DatabaseHelper.dart';
 import '../../../model/request/deleteProfileRequest.dart';
 import '../../component/CustomAlert.dart';
 import '../../component/connectivity_service.dart';
@@ -67,12 +67,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
+    initializeDatabase();
     Helper.getVendorDetails().then((onValue) {
-      print("theme : $onValue");
       setState(() {
-        theme = onValue?.theme;
         vendorId = "${onValue?.id}";
-        //setThemeColor();
       });
     });
 
@@ -83,20 +81,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     Helper.getAppThemeMode().then((appTheme) {
       setState(() {
-        //print("App theme $appTheme");
         selectedValue = "$appTheme" != "null" ? "$appTheme" : themeType.first;
       });
     });
-    $FloorChaatBarDatabase
-        .databaseBuilder('basic_structure_database.db')
-        .build()
-        .then((value) async {
-      this.database = value;
-    });
+
     isDataLoading = true;
     _fetchDataFromPref();
     _fetchData();
   }
+
+  Future<void> initializeDatabase() async {
+    database = await DatabaseHelper().database;
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +101,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     mediaWidth = MediaQuery.of(context).size.width;
     isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return PopScope(
-      canPop: false,
+      canPop: true,
       onPopInvoked: (bool didPop) {
         if (didPop) {
           return;
@@ -119,6 +116,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             style: TextStyle(
                 fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
           ),
+          iconTheme: IconThemeData(size: 20, color: Colors.black),
         ),
         body: Container(
           height: screenHeight,
@@ -135,10 +133,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       SizedBox(height: 20),
                       Image.asset(
                         "assets/appLogo.png",
-                        height: screenHeight / 5,
-                        width: mediaWidth / 2.5,
+                        height: screenHeight / 6,
+                        width: mediaWidth / 2,
                       ),
-                      SizedBox(height: 20),
+                      SizedBox(height: 10),
                       _buildTextInputField(
                           label: "First Name",
                           controller: _nameController,
@@ -158,7 +156,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           keyboardType: TextInputType.emailAddress,
                           isClickable: false),
                       SizedBox(height: 35),
-                      email != "guest@isekaitech.com"
+                      email != "guest@chaatbar.com"
                           ? Container(
                               width: mediaWidth * 0.45,
                               child: ElevatedButton(
@@ -188,7 +186,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               ),
                             )
                           : SizedBox(),
-                      email != "guest@isekaitech.com"
+                      email != "guest@chaatbar.com"
                           ? Align(
                               alignment: Alignment.bottomCenter,
                               child: Container(
@@ -283,30 +281,73 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _fetchData() async {
     bool isConnected = await _connectivityService.isConnected();
-    print(("isConnected - ${isConnected}"));
+    print("isConnected - $isConnected");
+
     if (!isConnected) {
-      setState(() {
-        isLoading = false;
-        isInternetConnected = false;
+      // If no internet connection, update the UI accordingly
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+          isInternetConnected = false;
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(Languages.of(context)!.labelNoInternetConnection),
             duration: maxDuration,
           ),
         );
-      });
+      }
     } else {
       hideKeyBoard();
+
       if (mounted) {
         setState(() {
-          isLoading = false;
+          isLoading = true; // Set to true to indicate loading state
         });
-        await Future.delayed(Duration(milliseconds: 2));
-        await Provider.of<MainViewModel>(context, listen: false)
-            .fetchProfile("/api/v1/app/customers/$vendorId/get_profile");
-        ApiResponse apiResponse =
-            Provider.of<MainViewModel>(context, listen: false).response;
-        getProfileResponse(context, apiResponse);
+
+        try {
+          // Fetch profile data after a short delay
+          await Future.delayed(Duration(milliseconds: 2));
+
+          if (mounted) {
+            await Provider.of<MainViewModel>(context, listen: false)
+                .fetchProfile("/api/v1/app/customers/$vendorId/get_profile");
+
+            // If the response is valid, proceed with updating the UI
+            ApiResponse apiResponse =
+                Provider.of<MainViewModel>(context, listen: false).response;
+
+            if (apiResponse.success) {
+              getProfileResponse(context, apiResponse);
+            } else {
+              // Handle API failure scenario
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Something went wrong!!"),
+                  duration: maxDuration,
+                ),
+              );
+            }
+          }
+        } catch (e) {
+          // Handle exceptions gracefully
+          if (mounted) {
+            setState(() {
+              isLoading = false;
+            });
+
+            // Optionally show error message if an exception occurs
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("Something went wrong!!"),
+                duration: maxDuration,
+              ),
+            );
+
+            print("Error fetching profile: $e");
+          }
+        }
       }
     }
   }

@@ -1,5 +1,4 @@
 import 'package:TheChaatBar/theme/CustomAppColor.dart';
-import 'package:TheChaatBar/view/component/toastMessage.dart';
 import 'package:TheChaatBar/view/screens/authentication/loginScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -82,10 +81,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         return Center(child: CircularProgressIndicator());
       case Status.COMPLETED:
         String data = "${mediaList?.email}";
-        CustomAlert.showToast(context: context, message: apiResponse.message);
-
-        Navigator.pushNamed(context, "/OtpForgotPassScreen", arguments: data);
-
+        CustomAlert.showToast(context: context, message: mediaList?.message);
+        Future.delayed(Duration(milliseconds: 150), () {
+          Navigator.pushNamed(context, "/OtpForgotPassScreen", arguments: data);
+        });
         setState(() {
           isOtpBoxVisible = true;
         });
@@ -120,24 +119,20 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       case Status.LOADING:
         return Center(child: CircularProgressIndicator());
       case Status.COMPLETED:
-        print("rwrwr ");
-        //Navigator.pushNamed(context, '/ProfileScreen');
-        CustomAlert.showToast(context: context, message: apiResponse.message);
+        CustomAlert.showToast(context: context, message: mediaList.message);
         Helper.clearAllSharedPreferences();
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => LoginScreen()),
           (Route<dynamic> route) => false,
         );
 
-        return Container(); // Return an empty container as you'll navigate away
+        return Container();
       case Status.ERROR:
         if (nonCapitalizeString("${apiResponse.message}") ==
             nonCapitalizeString(
                 "${Languages.of(context)?.labelInvalidAccessToken}"))
           SessionExpiredDialog.showDialogBox(context: context);
-        return Center(
-            //child: Text('Please try again later!!!'),
-            );
+        return Center();
       case Status.INITIAL:
       default:
         return Center(
@@ -148,13 +143,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Get screen height and width
     screenHeight = MediaQuery.of(context).size.height;
     mediaWidth = MediaQuery.of(context).size.width;
-
-    // Check if dark mode is enabled
     isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
       appBar: AppBar(),
       body: SingleChildScrollView(
@@ -172,11 +163,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15), // Slightly rounded corners
+        borderRadius: BorderRadius.circular(15),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10),
-        // More padding
         child: Center(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -236,7 +226,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     return Container(
       height: 55,
       width: mediaWidth * 0.85,
-      // Increased width for more spacious text field
       padding: EdgeInsets.symmetric(horizontal: 10.0),
       margin: EdgeInsets.symmetric(vertical: 4.0),
       decoration: BoxDecoration(
@@ -245,9 +234,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         boxShadow: [
           BoxShadow(
             color: Color.fromRGBO(0, 0, 0, 0.07),
-
             offset: Offset(0, 1),
-            // Adjust X and Yoffset to match Figma
             blurRadius: 5,
             spreadRadius: 0.6,
           ),
@@ -272,7 +259,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 hintText: 'e.g-john@example.com',
                 hintStyle: TextStyle(color: Colors.grey, fontSize: 12),
                 border: InputBorder.none,
-                counterText: "", // Remove counter text
+                counterText: "",
               ),
             ),
           ),
@@ -284,9 +271,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Widget _buildResetPasswordButton() {
     return MaterialButton(
       minWidth: mediaWidth * 0.7,
-      // Slightly wider button
       elevation: 5,
-      // Added elevation for depth effect
       padding: EdgeInsets.symmetric(vertical: 14),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
@@ -296,7 +281,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       child: Text(
         "Reset Password",
         style: TextStyle(
-          fontSize: 16, // Increased font size
+          fontSize: 16,
           color: Colors.white,
           fontWeight: FontWeight.w600,
         ),
@@ -326,8 +311,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 fontSize: 14,
                 color: Colors.black,
                 fontWeight: FontWeight.w500,
-                decoration:
-                    TextDecoration.underline, // Added underline for emphasis
+                decoration: TextDecoration.underline,
               ),
             ),
           ],
@@ -337,6 +321,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   void _onResetPasswordPressed() async {
+    hideKeyBoard();
     if (_emailController.text.isNotEmpty) {
       setState(() {
         isLoading = true;
@@ -356,18 +341,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         content: Text(Languages.of(context)!.labelEnterValidPhone),
       ));
     }
-  }
-
-  Widget _buildLabelText(
-      BuildContext context, String text, int size, bool isBold) {
-    return Text(
-      text,
-      style: TextStyle(
-        fontSize: size.toDouble(),
-        color: Colors.black,
-        fontWeight: isBold ? FontWeight.w600 : FontWeight.normal,
-      ),
-    );
   }
 
   Widget _buildLoadingIndicator() {

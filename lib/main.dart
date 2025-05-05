@@ -1,5 +1,3 @@
-import 'package:TheChaatBar/utils/Helper.dart';
-import 'package:TheChaatBar/view/component/CustomAlert.dart';
 import 'package:TheChaatBar/view/screens/authentication/forgotPassword/changePasswordScreen.dart';
 import 'package:TheChaatBar/view/screens/authentication/forgotPassword/forgotPasswordScreen.dart';
 import 'package:TheChaatBar/view/screens/authentication/welcomeScreen.dart';
@@ -7,7 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -16,14 +13,11 @@ import 'languageSection/AppLocalizationsDelegate.dart';
 import 'languageSection/LanguageList.dart';
 import 'model/request/verifyOtpChangePass.dart';
 import 'model/response/createOrderResponse.dart';
-import 'model/response/notificationOtpResponse.dart';
 import 'model/response/productListResponse.dart';
 import 'model/response/successCallbackResponse.dart';
 import 'model/response/vendorListResponse.dart';
 import 'model/services/AuthenticationProvider.dart';
-import 'model/services/PushNotificationService.dart';
 import 'model/viewModel/mainViewModel.dart';
-import 'theme/CustomAppColor.dart';
 import 'theme/CustomAppTheme.dart';
 import 'view/component/my_navigator_observer.dart';
 import 'view/screens/authentication/forgotPassword/otp_forgot_pass_screen.dart';
@@ -49,65 +43,62 @@ import 'view/screens/porfile/profile_screen.dart';
 import 'view/screens/vendor_screen.dart';
 import 'view/screens/vendorsListScreen.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+late AndroidNotificationChannel channel;
+late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+bool isFlutterLocalNotificationsInitialized = false;
+
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  await setupFlutterNotifications();
+  print('Handling a background message ${message.messageId}');
+}
+
+Future<void> setupFlutterNotifications() async {
+  if (isFlutterLocalNotificationsInitialized) return;
+
+  channel = const AndroidNotificationChannel(
+    'high_importance_channel',
+    'High Importance Notifications',
+    description: 'This channel is used for important notifications.',
+    importance: Importance.high,
+  );
+
+  flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(channel);
+
+  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
+
+  isFlutterLocalNotificationsInitialized = true;
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-
-  // Set preferred orientations and run app
-  await SystemChrome.setPreferredOrientations(
-      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
-
-  // Clear all notifications when app is resumed or opened
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  await setupFlutterNotifications();
   WidgetsBinding.instance.addPostFrameCallback((_) {
     FlutterLocalNotificationsPlugin().cancelAll();
   });
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
-  final RemoteMessage? initialMessage;
 
-  MyApp({this.initialMessage});
-
-  @override
-  _MyAppState createState() => _MyAppState(initialMessage);
-}
-
-class _MyAppState extends State<MyApp> {
-  // This widget is the root of your application.
-  Locale _locale = const Locale('en');
-  late String? _appTheme = 'Light';
-  final RemoteMessage? initialMessage;
-
-  ThemeMode _themeMode = ThemeMode.system;
-
-  _MyAppState(this.initialMessage);
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchData();
-  }
-
-  void setLocale(Locale locale) {
-    setState(() {
-      _locale = locale;
-    });
-  }
-
-  void _toggleTheme(ThemeMode themeMode) {
-    setState(() {
-      _themeMode = themeMode;
-    });
-  }
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: AppColor.AppBar,
-      statusBarIconBrightness: Brightness.light,
-      statusBarBrightness: Brightness.light,
-    ));
     return MultiProvider(
       providers: [
         Provider<FirebaseAuth>(
@@ -124,31 +115,17 @@ class _MyAppState extends State<MyApp> {
           debugShowCheckedModeBanner: false,
           navigatorKey: navigatorKey,
           title: 'Chaat_Bar',
-          locale: _locale,
+          locale: const Locale('en'),
           localizationsDelegates: [
             GlobalMaterialLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
             AppLocalizationsDelegate()
           ],
-          onGenerateRoute: (settings) {
-            if (settings.name == '/CartScreen') {
-              return _createPopupRoute();
-            }
-            return null;
-          },
           supportedLocales: LanguageList.all,
           theme: AppTheme.getAppTheme(),
           initialRoute: '/',
           routes: {
-            '/': (context) {
-              NotificationOtpResponse? notificationResponse =
-                  NotificationOtpResponse(otp: "", notificationType: "");
-              if (initialMessage?.data != null) {
-                notificationResponse =
-                    NotificationOtpResponse.fromJson(initialMessage!.data);
-              }
-              return SplashScreen(data: notificationResponse);
-            },
+            '/': (context) => const SplashScreen(),
             '/ChooseLocalityScreen': (context) {
               final args =
                   ModalRoute.of(context)?.settings.arguments as String?;
@@ -161,17 +138,14 @@ class _MyAppState extends State<MyApp> {
             '/ActiveOrdersScreen': (context) => ActiveOrdersScreen(),
             '/VendorScreen': (context) => VendorScreen(),
             '/HomeScreen': (context) => HomeScreen(),
-            '/BottomNavigation': (context) =>
-                BottomNavigation(onThemeChanged: _toggleTheme),
+            '/BottomNavigation': (context) => BottomNavigation(),
             '/RegisterScreen': (context) => RegisterScreen(),
             '/EditProfileScreen': (context) => EditProfileScreen(),
             '/CouponsScreen': (context) => CouponsScreen(),
             '/EditInformationScreen': (context) => EditInformationScreen(),
             '/ForgotPasswordScreen': (context) => ForgotPasswordScreen(),
             '/WelcomeScreen': (context) => WelcomeScreen(),
-            '/ProfileScreen': (context) => ProfileScreen(
-                  onThemeChanged: _toggleTheme,
-                ),
+            '/ProfileScreen': (context) => ProfileScreen(),
             '/CartScreen': (context) {
               return CartScreen();
             },
@@ -230,57 +204,6 @@ class _MyAppState extends State<MyApp> {
               );
             },
           }),
-    );
-  }
-
-  void _fetchData() async {
-    await Future.delayed(Duration(milliseconds: 2));
-    var selectedLanguage = await Helper.getLocale();
-    var selectedAppTheme = 'Light';
-    print(selectedLanguage.languageCode);
-    Helper.getAppThemeMode().then((appTheme) {
-      setState(() {
-        selectedAppTheme =
-            "$appTheme" != "null" ? "$appTheme" : selectedAppTheme;
-        _appTheme = '$selectedAppTheme';
-
-        if ("$_appTheme" == "Default") {
-          print("value $_appTheme");
-          _toggleTheme(ThemeMode.system);
-        } else if ("$_appTheme" == "Light") {
-          _toggleTheme(ThemeMode.light);
-        } else if ("$_appTheme" == "Dark") {
-          _toggleTheme(ThemeMode.dark);
-        } else {
-          _toggleTheme(ThemeMode.light);
-        }
-      });
-    });
-    // Ensure that setState is called synchronously after the async work is done
-    if (mounted) {
-      setState(() {
-        _locale = Locale(selectedLanguage.languageCode);
-      });
-    }
-  }
-
-  Route _createPopupRoute() {
-    return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => CartScreen(),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        // Scale transition for pop-up effect
-        const begin = 0.0;
-        const end = 1.0;
-        const curve = Curves.easeInOut;
-
-        var tween =
-            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-        return ScaleTransition(
-          scale: animation.drive(tween),
-          child: child,
-        );
-      },
     );
   }
 }

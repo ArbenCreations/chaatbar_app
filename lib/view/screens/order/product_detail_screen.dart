@@ -18,6 +18,7 @@ import '../../../../model/response/categoryListResponse.dart';
 import '../../../../model/response/markFavoriteResponse.dart';
 import '../../../../model/viewModel/mainViewModel.dart';
 import '../../../../theme/CustomAppColor.dart';
+import '../../../model/database/DatabaseHelper.dart';
 import '../../../model/response/vendorListResponse.dart';
 import '../../../utils/Helper.dart';
 import '../../../utils/Util.dart';
@@ -100,13 +101,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
       });
       // setThemeColor();
     });
-    Helper.getVendorTheme().then((onValue) {
-      print("theme : $onValue");
-      setState(() {
-        theme = onValue;
-        //setThemeColor();
-      });
-    });
+
     imageUrl = "";
     _controller = AnimationController(
       duration: Duration(milliseconds: 300),
@@ -1483,6 +1478,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
               vendorListResponse.data?[0] ?? CategoryData();
         });
         updateCategoriesDetails(vendorListResponse?.data);
+        print("productCategoryId ::${widget.data?.productCategoryId}");
         getProductDataDB("${widget.data?.productCategoryId}");
 
         return Container(); // Return an empty container as you'll navigate away
@@ -1729,9 +1725,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
   }
 
   Future<void> initializeDatabase() async {
-    database = await $FloorChaatBarDatabase
-        .databaseBuilder('basic_structure_database.db')
-        .build();
+    database = await DatabaseHelper().database;
 
     cartDataDao = database.cartDao;
     favoritesDataDao = database.favoritesDao;
@@ -1741,7 +1735,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     //_fetchCategoryData();
     getCartData();
     //getProductDataDB("${widget.data?.productCategoryId}");
-    //getCategoryDataDB();
+    getCategoryDataDB();
   }
 
   Future<void> getCartData() async {
@@ -1868,6 +1862,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
             }
           });
           isCategoryLoading = false;
+          print("productCategoryId ::${widget.data?.productCategoryId}");
           getProductDataDB("${widget.data?.productCategoryId}");
         });
         //_fetchCategoryData();

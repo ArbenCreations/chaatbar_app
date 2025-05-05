@@ -4,13 +4,13 @@ import 'package:TheChaatBar/model/response/createOrderResponse.dart';
 import 'package:TheChaatBar/model/response/getHistoryResponse.dart';
 import 'package:TheChaatBar/model/response/vendorListResponse.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 
 import '../../../languageSection/Languages.dart';
 import '../../../model/apis/apiResponse.dart';
 import '../../../model/viewModel/mainViewModel.dart';
 import '../../../theme/CustomAppColor.dart';
-import '../../../utils/Helper.dart';
 import '../../../utils/Util.dart';
 import '../../component/ShimmerList.dart';
 import '../../component/connectivity_service.dart';
@@ -55,18 +55,11 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
   int upcomingType = 5;
   int pastType = 2;
   int selectedOrderType = 2;
+  int? _totalRows = 0;
 
   @override
   void initState() {
     super.initState();
-    Helper.getVendorTheme().then((onValue) {
-      print("theme : $onValue");
-      setState(() {
-        theme = onValue;
-        //setThemeColor();
-      });
-    });
-
     historyOrders.clear();
     setState(() {
       isActive = true;
@@ -78,14 +71,20 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
   }
 
   void _LoadMore() async {
+    final currentList =
+        selectedOrderType == activeType ? activeOrders : upcomingOrders;
+
     if (!_isLoadingMore &&
         _scrollController.position.pixels ==
-            _scrollController.position.maxScrollExtent) {
+            _scrollController.position.maxScrollExtent &&
+        currentList.length < _totalRows!) {
       setState(() {
         _isLoadingMore = true;
       });
+
       _currentPage++;
       await _fetchData(_currentPage, true, selectedOrderType);
+
       setState(() {
         _isLoadingMore = false;
       });
@@ -140,25 +139,31 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
                     horizontal: 15.0, vertical: 10.0),
                 child: IntrinsicWidth(
                   child: Container(
-                    //   width: 200,
-                    // Full width
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8.0),
-                      border: Border.all(
-                          color: Colors.white), // Border for better UI
+                      gradient: LinearGradient(
+                        colors: [Colors.white, Colors.grey.shade100],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(12.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 8,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                      border: Border.all(color: Colors.grey.shade300),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                    // Inner padding
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12.0, vertical: 5),
                     child: DropdownButtonHideUnderline(
-                      // Removes default underline
                       child: DropdownButton<String>(
                         value: selectedValue,
                         dropdownColor: Colors.white,
                         isExpanded: true,
-                        // Ensures full width
-                        icon: Icon(Icons.arrow_drop_down, color: Colors.black),
-                        // Custom icon
+                        icon: Icon(Icons.keyboard_arrow_down_rounded,
+                            color: Colors.black87, size: 24),
                         onChanged: (String? newValue) {
                           setState(() {
                             if (newValue == "Active") {
@@ -180,17 +185,17 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
                               children: [
                                 Icon(
                                   getIcon(value),
-                                  size: 15,
+                                  size: 20,
+                                  color: Colors.blueGrey,
                                 ),
-                                SizedBox(
-                                  width: 5,
-                                ),
+                                SizedBox(width: 8),
                                 Text(
                                   value,
                                   style: TextStyle(
-                                    fontSize: 13,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black87,
                                   ),
-                                  textAlign: TextAlign.center,
                                 ),
                               ],
                             ),
@@ -236,17 +241,16 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
     );
   }
 
-  // Function to return widget based on dropdown selection
   Widget _buildSelectedWidget() {
     switch (selectedValue) {
       case 'Past':
-        return _buildHistory(); // Function to build past history widget
+        return _buildHistory();
       case 'Active':
-        return _buildActive(); // Function to build active history widget
+        return _buildActive();
       case 'Upcoming':
-        return _buildUpcoming(); // Function to build upcoming history widget
+        return _buildUpcoming();
       default:
-        return Container(); // Default empty widget
+        return Container();
     }
   }
 
@@ -326,9 +330,20 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
                   },
                 )
               : Center(
-                  child: Text(
-                    "No Past Orders",
-                    style: TextStyle(fontSize: 15, color: Colors.grey),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        height: 100,
+                        child: SvgPicture.asset(
+                          "assets/emptyList.svg",
+                        ),
+                      ),
+                      Text(
+                        "No Past Orders",
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                    ],
                   ),
                 )
           : Padding(
@@ -398,9 +413,20 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
                   },
                 )
               : Center(
-                  child: Text(
-                    "No Active Orders",
-                    style: TextStyle(fontSize: 15, color: Colors.grey),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        height: 100,
+                        child: SvgPicture.asset(
+                          "assets/emptyList.svg",
+                        ),
+                      ),
+                      Text(
+                        "No Active Orders",
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                    ],
                   ),
                 )
           : Padding(
@@ -470,9 +496,20 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
                   },
                 )
               : Center(
-                  child: Text(
-                    "No Upcoming Orders",
-                    style: TextStyle(fontSize: 15, color: Colors.grey),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        height: 100,
+                        child: SvgPicture.asset(
+                          "assets/emptyList.svg",
+                        ),
+                      ),
+                      Text(
+                        "No Upcoming Orders",
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                    ],
                   ),
                 )
           : Padding(
@@ -481,21 +518,6 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
             ),
     );
     ;
-  }
-
-  void _activeLoadMore() async {
-    if (!_isLoadingMore &&
-        _scrollController.position.pixels ==
-            _scrollController.position.maxScrollExtent) {
-      setState(() {
-        _isLoadingMore = true;
-      });
-      _currentPage++;
-      await _fetchData(_currentPage, true, selectedOrderType);
-      setState(() {
-        _isLoadingMore = false;
-      });
-    }
   }
 
   bool checkListEmpty(List<OrderDetails> list) {
@@ -539,7 +561,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
         });
       } else {
         GetHistoryRequest request = GetHistoryRequest(
-            pageNumber: pageKey, pageSize: 8, status: selectedOrderType);
+            pageNumber: pageKey, pageSize: 10, status: selectedOrderType);
         await Provider.of<MainViewModel>(context, listen: false)
             .getHistoryData("/api/v1/app/orders/cust_order_history", request);
         ApiResponse apiResponse =
@@ -563,16 +585,29 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
         return;
       case Status.COMPLETED:
         final newItems = getHistoryResponse?.orders ?? [];
+        _totalRows = getHistoryResponse?.totalRows ?? 0;
         setState(() {
           print(
               "getHistoryResponse?.orders :: ${getHistoryResponse?.orders?.length}");
           if (selectedOrderType == pastType) {
+            if (pageKey == 1) {
+              historyOrders.clear();
+            }
             historyOrders.addAll(newItems);
           } else if (selectedOrderType == activeType) {
+            if (pageKey == 1) {
+              activeOrders.clear();
+            }
             activeOrders.addAll(newItems);
           } else if (selectedOrderType == upcomingType) {
+            if (pageKey == 1) {
+              upcomingOrders.clear();
+            }
             upcomingOrders.addAll(newItems);
           } else {
+            if (pageKey == 1) {
+              historyOrders.clear();
+            }
             historyOrders.addAll(newItems);
           }
           print("historyOrders.length :: ${historyOrders.length}");
@@ -693,9 +728,7 @@ class OrderCard extends StatelessWidget {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: order.orderItems?.isNotEmpty == true
-                                  ? order.orderItems!
-                                      .take(3) // Limiting to 3 items
-                                      .map((item) {
+                                  ? order.orderItems!.take(3).map((item) {
                                       return Text(
                                         "${item.quantity} x ${capitalizeFirstLetter("${item.product?.title}")}",
                                         style: TextStyle(
@@ -788,7 +821,6 @@ class TagPainter extends CustomPainter {
 
     const borderRadius = 4.0;
 
-    // Draw the main rounded rectangle shape with top-left, top-right, and bottom-right rounded corners
     final roundedRect = RRect.fromRectAndCorners(
       Rect.fromLTWH(0, 0, size.width, size.height),
       topLeft: Radius.circular(borderRadius),
@@ -797,48 +829,15 @@ class TagPainter extends CustomPainter {
       bottomLeft: Radius.zero, // Keep the bottom-left corner sharp
     );
 
-    // Draw the rounded rectangle part
     canvas.drawRRect(roundedRect, paint);
 
     final path = Path();
-    path.moveTo(13, size.height); // Start for the bottom edge of the rectangle
-    path.lineTo(
-        13, size.height + 8); // Diagonal down to create the triangular tail
-    //path.lineTo(3, size.height);
-    path.close(); // Close the path
+    path.moveTo(13, size.height);
+    path.lineTo(13, size.height + 8);
+    path.close();
 
     canvas.drawPath(path, paint);
   }
-
-/*
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.green;
-
-    const borderRadius = 5.0;
-
-    // Draw the main rounded rectangle shape with top-left, top-right, and bottom-right rounded corners
-    final roundedRect = RRect.fromRectAndCorners(
-      Rect.fromLTWH(0, 0, size.width, size.height),
-      topLeft: Radius.circular(borderRadius),
-      topRight: Radius.circular(borderRadius),
-      bottomRight: Radius.circular(borderRadius),
-      bottomLeft: Radius.zero, // Keep the bottom-left corner sharp
-    );
-
-    // Draw the rounded rectangle part
-    canvas.drawRRect(roundedRect, paint);
-
-    // Create a path for the tail
-    final path = Path();
-    path.moveTo(15, size.height);            // Start from bottom left of tail
-    path.lineTo(15, size.height + 10);       // Diagonal for the triangular tail
-    path.lineTo(5, size.height);             // Back up to create tail shape
-    path.close();
-
-    // Draw the tail path
-    canvas.drawPath(path, paint);
-  }*/
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {

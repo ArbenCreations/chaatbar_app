@@ -8,7 +8,6 @@ import 'package:TheChaatBar/view/component/dashboard_category_component.dart';
 import 'package:TheChaatBar/view/component/dashboard_search_component.dart';
 import 'package:TheChaatBar/view/component/featured_product_component.dart';
 import 'package:TheChaatBar/view/component/product_component.dart';
-import 'package:TheChaatBar/view/component/toastMessage.dart';
 import 'package:TheChaatBar/view/screens/vendor_search_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,6 +18,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../languageSection/Languages.dart';
 import '../../model/apis/apiResponse.dart';
 import '../../model/database/ChaatBarDatabase.dart';
+import '../../model/database/DatabaseHelper.dart';
 import '../../model/request/markFavoriteRequest.dart';
 import '../../model/response/bannerListResponse.dart';
 import '../../model/response/categoryDataDB.dart';
@@ -283,8 +283,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     ),
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: Colors.white
-                                    ),
+                                        color: Colors.green.shade50),
                                   ),
                                   if (cartItemCount >
                                       0) // Show badge only if cartCount > 0
@@ -327,14 +326,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           queryController: queryController,
                           hintIndex: hintIndex,
                         ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 12),
-                          child: BannerListWidget(
-                              data: bannerList,
-                              isInternetConnected: isInternetConnected,
-                              isLoading: isBannerLoading,
-                              isDarkMode: isDarkMode),
-                        ),
+
                         SizedBox(
                           height: 2,
                         ),
@@ -373,6 +365,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 ),
                               )
                             : SizedBox(),
+
                         Container(
                             margin: EdgeInsets.symmetric(horizontal: 12),
                             alignment: Alignment.center,
@@ -382,7 +375,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     ? screenHeight * 0.15
                                     : categories.isEmpty
                                         ? 0
-                                        : 100),
+                                        : 160 // or adjust based on your Grid item height
+                                ),
                             child: isCategoryLoading
                                 ? ListView.builder(
                                     itemCount: 3,
@@ -414,6 +408,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         isDarkMode: isDarkMode,
                                         primaryColor: primaryColor,
                                         vendorData: vendorData)),
+
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 12),
+                          child: BannerListWidget(
+                              data: bannerList,
+                              isInternetConnected: isInternetConnected,
+                              isLoading: isBannerLoading,
+                              isDarkMode: isDarkMode),
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
                         isFeaturedProductsLoading
                             ? SizedBox(
                                 height: 10,
@@ -625,29 +631,53 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _fetchDashboardData() async {
+    // Start loading
     setState(() {
       isLoading = true;
     });
 
     bool isConnected = await _connectivityService.isConnected();
     if (!isConnected) {
-      setState(() {
-        isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${Languages.of(context)?.labelNoInternetConnection}'),
-          duration: maxDuration,
-        ),
-      );
-    } else {
-      await Provider.of<MainViewModel>(context, listen: false)
-          .fetchDashboardData(
-              "/api/v1/app/customers/dashboard_data", vendorData?.id);
+      // If no internet connection, stop loading and show a snackbar
       if (mounted) {
-        ApiResponse apiResponse =
-            Provider.of<MainViewModel>(context, listen: false).response;
-        getDashboardData(context, apiResponse);
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Text('${Languages.of(context)?.labelNoInternetConnection}'),
+            duration: maxDuration,
+          ),
+        );
+      }
+    } else {
+      try {
+        // Fetch dashboard data
+        await Provider.of<MainViewModel>(context, listen: false)
+            .fetchDashboardData(
+                "/api/v1/app/customers/dashboard_data", vendorData?.id);
+
+        // After fetching data, check if widget is still mounted before updating UI
+        if (mounted) {
+          ApiResponse apiResponse =
+              Provider.of<MainViewModel>(context, listen: false).response;
+          getDashboardData(context, apiResponse);
+        }
+      } catch (e) {
+        // Handle any errors that occur during the fetch operation
+        if (mounted) {
+          setState(() {
+            isLoading = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Something went wrong!!"),
+              duration: maxDuration,
+            ),
+          );
+          print("Error fetching dashboard data: $e");
+        }
       }
     }
   }
@@ -754,8 +784,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     bool isConnected = await _connectivityService.isConnected();
     if (!isConnected) {
-      setState(() {
-        isLoading = false;
+      // Check if the widget is still mounted before updating the UI
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content:
@@ -763,15 +797,38 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             duration: maxDuration,
           ),
         );
-      });
+      }
     } else {
-      // await Future.delayed(Duration(milliseconds: 2));
-      await Provider.of<MainViewModel>(context, listen: false).fetchStoreStatus(
-          "/api/v1/app/orders/get_store_status?vendor_id=$vendorId");
-      if (mounted) {
-        ApiResponse apiResponse =
-            Provider.of<MainViewModel>(context, listen: false).response;
-        getStoreStatusResponse(context, apiResponse);
+      try {
+        // Fetch store status after ensuring the widget is mounted
+        await Provider.of<MainViewModel>(context, listen: false)
+            .fetchStoreStatus(
+                "/api/v1/app/orders/get_store_status?vendor_id=$vendorId");
+
+        // Ensure the widget is still mounted before updating state
+        if (mounted) {
+          ApiResponse apiResponse =
+              Provider.of<MainViewModel>(context, listen: false).response;
+
+          // Handle the response based on success or failure
+          getStoreStatusResponse(context, apiResponse);
+        }
+      } catch (e) {
+        // Handle any exceptions that might occur
+        if (mounted) {
+          setState(() {
+            isLoading = false; // Stop loading if an error occurs
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Something went wrong!!"),
+              duration: maxDuration,
+            ),
+          );
+
+          print("Error fetching store status: $e");
+        }
       }
     }
   }
@@ -1061,8 +1118,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       List<ProductDataDB?> productsList =
           await cartDataDao.findAllCartProducts();
       print("productsList length: ${productsList.length}");
-
-      print("theme : ${data.theme} :: vendorName : ${data.vendorName} ");
       productsList.add(data);
 
       if (mounted) {
@@ -1134,10 +1189,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Future<void> initializeDatabase() async {
-    database = await $FloorChaatBarDatabase
-        .databaseBuilder('basic_structure_database.db')
-        .build();
-
+    database = await DatabaseHelper().database;
     cartDataDao = database.cartDao;
     favoritesDataDao = database.favoritesDao;
     categoryDataDao = database.categoryDao;

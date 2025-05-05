@@ -412,7 +412,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   SignInRequest request = SignInRequest(
                       customer: CustomerSignIn(
                     deviceToken: "${deviceToken}",
-                    email: "guest@isekaitech.com",
+                    email: "guest@chaatbar.com",
                     password: "Isekai@123",
                   ));
 
@@ -520,6 +520,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 errorBorder: UnderlineInputBorder(
                     borderSide: BorderSide(color: Colors.red, width: 0.4)),
                 hintText: hintText,
+                errorStyle: TextStyle(fontSize: 9, height: 1),
                 counterText: "",
                 //icon: icon,
               ),
@@ -620,7 +621,7 @@ class _LoginScreenState extends State<LoginScreen> {
               // Adjust padding
 
               counterText: "",
-              errorStyle: TextStyle(fontSize: 11, height: 1),
+              errorStyle: TextStyle(fontSize: 9, height: 1),
               // Reduces error text size
               errorMaxLines: 2,
               // Allows error messages to wrap properly
@@ -641,18 +642,18 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return "Password is required";
+                return "$hintText is required";
               }
               if (!hasMinLength(value)) {
-                return "Password must be at least 8 characters long";
+                return "$hintText must be at least 8 characters long";
               }
-              if (!hasUppercase(value)) {
+              if (!RegExp(r'[A-Z]').hasMatch(value)) {
                 return "Password must contain at least one uppercase letter";
               }
-              if (!hasDigit(value)) {
+              if (!RegExp(r'[0-9]').hasMatch(value)) {
                 return "Password must contain at least one digit";
               }
-              if (!hasSpecialCharacter(value)) {
+              if (!RegExp(r'[!@#\$&*~]').hasMatch(value)) {
                 return "Password must contain at least one special character";
               }
               return null;
@@ -1274,17 +1275,13 @@ class _SignUpFormState extends State<SignUpForm> {
                 ),
                 SizedBox(height: 10),
                 Text(
-                  "Your number lets TheChaiBar and Admin contact you about orders. It’s masked to help protect your privacy.",
+                  "Your number lets TheChaatBar and Admin contact you about orders. It’s masked to help protect your privacy.",
                   style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
                 SizedBox(height: 20),
-                /*
-                isLoading
-                    ? CustomCircularProgress()
-                    :*/
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
+                    backgroundColor: AppColor.Primary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50),
                     ),

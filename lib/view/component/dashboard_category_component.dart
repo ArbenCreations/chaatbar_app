@@ -26,60 +26,70 @@ class DashboardCategoryComponent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: categories.length,
-      scrollDirection: Axis.horizontal,
-      itemBuilder: (context, index) {
-        var currentItem = categories[index];
-        var currentCategoryName = categories[index]?.categoryName;
-        var currentCategoryImage = categories[index]?.categoryImage;
-        return GestureDetector(
-          onTap: () {
-            VendorData? data = vendorData;
-            data?.detailType = "menu";
-            data?.selectedCategoryId = currentItem?.id;
-            Navigator.pushNamed(context, "/MenuScreen", arguments: data);
-          },
-          child: Column(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(40),
+    var mediaWidth = MediaQuery.of(context).size.width;
+    double avatarSize = mediaWidth * 0.11;
+    double fontSize = mediaWidth * 0.022;
+    return SizedBox(
+      height: 150,
+      child: GridView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: categories.length,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2, // two rows
+          mainAxisSpacing: 0,
+          crossAxisSpacing: 6,
+          childAspectRatio: 0.9,
+        ),
+        padding: EdgeInsets.symmetric(horizontal: 8),
+        itemBuilder: (context, index) {
+          var currentItem = categories[index];
+          var currentCategoryName = currentItem?.categoryName;
+          var currentCategoryImage = currentItem?.categoryImage;
+
+          return GestureDetector(
+            onTap: () {
+              VendorData? data = vendorData;
+              data?.detailType = "menu";
+              data?.selectedCategoryId = currentItem?.id;
+              Navigator.pushNamed(context, "/MenuScreen", arguments: data);
+            },
+            child: Column(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(avatarSize),
                     color: isDarkMode
                         ? AppColor.CardDarkColor
-                        : AppColor.GreyTextColor),
-                width: 62,
-                height: 60,
-                margin: EdgeInsets.symmetric(horizontal: 4, vertical: 5),
-                //padding: EdgeInsets.only(bottom: 10, top: 10, left: 2, right: 2),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProfileImage(
-                        size: 60,
-                        imageUrl: currentCategoryImage,
-                        name: "${currentCategoryName}",
-                        needTextLetter: true,
-                        placeholderImage: "",
-                        isDarkMode: isDarkMode),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2),
-                child: Text(
-                  capitalizeFirstLetter("${currentCategoryName}"),
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600
+                        : AppColor.GreyTextColor,
+                  ),
+                  width: avatarSize,
+                  height: avatarSize,
+                  child: Center(
+                    child: CircularProfileImage(
+                      size: avatarSize,
+                      imageUrl: currentCategoryImage,
+                      name: "$currentCategoryName",
+                      needTextLetter: true,
+                      placeholderImage: "",
+                      isDarkMode: isDarkMode,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        );
-      },
+                SizedBox(height: screenHeight * 0.006),
+                Text(
+                  capitalizeFirstLetter("$currentCategoryName"),
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }

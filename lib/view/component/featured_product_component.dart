@@ -103,35 +103,14 @@ class FeaturedProductComponent extends StatelessWidget {
                           ),
                   ),
 
-                  SizedBox(width: 10), // Space between image & text
+                  SizedBox(width: 10),
 
-                  // Product Details
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        SizedBox(height: 2),
-                        // Category Tag
-                        /*  Container(
-                          padding:
-                              EdgeInsets.symmetric(vertical: 2, horizontal: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.orangeAccent.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            capitalizeFirstLetter(
-                                "${data.status ?? ""}"),
-                            style: TextStyle(
-                                fontSize: 11, fontWeight: FontWeight.bold),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-*/
                         SizedBox(height: 6),
-
-                        // Product Title
                         Text(
                           capitalizeFirstLetter(data.title ?? "Product"),
                           maxLines: 2,
@@ -139,7 +118,6 @@ class FeaturedProductComponent extends StatelessWidget {
                               fontSize: 14, fontWeight: FontWeight.bold),
                           overflow: TextOverflow.ellipsis,
                         ),
-                        // Product Title
                         Text(
                           capitalizeFirstLetter(data.description ?? "Product"),
                           maxLines: 2,
@@ -149,10 +127,7 @@ class FeaturedProductComponent extends StatelessWidget {
                               color: Colors.grey),
                           overflow: TextOverflow.ellipsis,
                         ),
-
                         SizedBox(height: 4),
-
-                        // Price & Quantity Controls
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -165,7 +140,6 @@ class FeaturedProductComponent extends StatelessWidget {
                                   fontWeight: FontWeight.bold),
                             ),
 
-                            // Quantity Adjuster
                             Container(
                               child: data.quantity == 0
                                   ? GestureDetector(

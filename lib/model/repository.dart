@@ -1,5 +1,6 @@
 import 'package:TheChaatBar/model/request/CardDetailRequest.dart';
 import 'package:TheChaatBar/model/request/CreateOrderRequest.dart';
+import 'package:TheChaatBar/model/request/EncryptedWalletRequest.dart';
 import 'package:TheChaatBar/model/request/TransactionRequest.dart';
 import 'package:TheChaatBar/model/request/createOtpChangePass.dart';
 import 'package:TheChaatBar/model/request/deleteProfileRequest.dart';
@@ -21,6 +22,7 @@ import 'package:TheChaatBar/model/request/vendorSearchRequest.dart';
 import 'package:TheChaatBar/model/request/verifyOtpChangePass.dart';
 import 'package:TheChaatBar/model/response/PaymentDetailsResponse.dart';
 import 'package:TheChaatBar/model/response/StoreSettingResponse.dart';
+import 'package:TheChaatBar/model/response/appleTokenDetailsResponse.dart';
 import 'package:TheChaatBar/model/response/bannerListResponse.dart';
 import 'package:TheChaatBar/model/response/categoryListResponse.dart';
 import 'package:TheChaatBar/model/response/couponListResponse.dart';
@@ -55,7 +57,7 @@ class MainRepository {
       String value, SignInRequest signInRequest) async {
     print(signInRequest);
     dynamic response = await service.postResponse(value, signInRequest);
-    print(value);
+
     final jsonData = response;
     print(" ${jsonData}");
     LoginResponse mediaList = LoginResponse.fromJson(jsonData);
@@ -67,7 +69,7 @@ class MainRepository {
     print(signUpWithGoogleRequest);
     dynamic response =
         await service.postResponse(value, signUpWithGoogleRequest);
-    print(value);
+
     final jsonData = response;
     print(" ${jsonData}");
     LoginResponse mediaList = LoginResponse.fromJson(jsonData);
@@ -77,7 +79,7 @@ class MainRepository {
   Future<GetApiAccessKeyResponse> getApiAccessKey(
       String value, String auth) async {
     dynamic response = await service.getCloverResponse(value, auth);
-    print(value);
+
     final jsonData = response;
     print(" ${jsonData}");
     GetApiAccessKeyResponse mediaList =
@@ -89,7 +91,7 @@ class MainRepository {
       String value, String apiKey, CardRequest cardRequest) async {
     dynamic response =
         await service.postCloverResponse(value, apiKey, cardRequest);
-    print(value);
+
     final jsonData = response;
     print(" ${jsonData}");
     TokenDetailsResponse mediaList = TokenDetailsResponse.fromJson(jsonData);
@@ -100,7 +102,7 @@ class MainRepository {
       String value, String auth, TransactionRequest transactionRequest) async {
     dynamic response = await service.postCloverFinalPaymentResponse(
         value, auth, transactionRequest);
-    print(value);
+
     final jsonData = response;
     print(" ${jsonData}");
     PaymentDetails mediaList = PaymentDetails.fromJson(jsonData);
@@ -112,7 +114,7 @@ class MainRepository {
     print(successCallbackRequest);
     dynamic response =
         await service.postResponse(value, successCallbackRequest);
-    print(value);
+
     final jsonData = response;
     print(" ${jsonData}");
     SuccessCallbackResponse mediaList =
@@ -124,7 +126,7 @@ class MainRepository {
       String value, SignUpRequest signUpRequest) async {
     print(signUpRequest);
     dynamic response = await service.postResponse(value, signUpRequest);
-    print(value);
+
     final jsonData = response;
     print(" ${jsonData}");
     SignUpInitializeResponse mediaList =
@@ -136,7 +138,7 @@ class MainRepository {
       String value, OtpVerifyRequest otpVerifyRequest) async {
     print(otpVerifyRequest);
     dynamic response = await service.postResponse(value, otpVerifyRequest);
-    print(value);
+
     final jsonData = response;
     print(" ${jsonData}");
     SignUpVerifyResponse mediaList = SignUpVerifyResponse.fromJson(jsonData);
@@ -145,7 +147,7 @@ class MainRepository {
 
   Future<LocationListResponse> fetchLocationList(String value) async {
     dynamic response = await service.getResponse(value);
-    print(value);
+
     final jsonData = response;
     print(jsonData);
     LocationListResponse mediaList = LocationListResponse.fromJson(jsonData);
@@ -154,7 +156,7 @@ class MainRepository {
 
   Future<VendorListResponse> fetchVendors(String value) async {
     dynamic response = await service.getResponse(value);
-    print(value);
+
     final jsonData = response;
     print(jsonData);
     VendorListResponse mediaList = VendorListResponse.fromJson(jsonData);
@@ -163,7 +165,7 @@ class MainRepository {
 
   Future<BannerListResponse> fetchBanners(String value) async {
     dynamic response = await service.getResponse(value);
-    print(value);
+
     final jsonData = response;
     print(jsonData);
     BannerListResponse mediaList = BannerListResponse.fromJson(jsonData);
@@ -176,7 +178,7 @@ class MainRepository {
         GetCategoryRequest(vendorId: vendorId);
 
     dynamic response = await service.postResponse(value, getCategoryRequest);
-    print(value);
+
     final jsonData = response;
     print(jsonData);
     DashboardDataResponse mediaList = DashboardDataResponse.fromJson(jsonData);
@@ -189,7 +191,7 @@ class MainRepository {
         GetCategoryRequest(vendorId: vendorId);
 
     dynamic response = await service.postResponse(value, getCategoryRequest);
-    print(value);
+
     final jsonData = response;
     print(jsonData);
     CategoryListResponse mediaList = CategoryListResponse.fromJson(jsonData);
@@ -329,7 +331,7 @@ class MainRepository {
     print(createOtpChangePassRequest);
     dynamic response =
         await service.postResponse(value, createOtpChangePassRequest);
-    print(value);
+
     final jsonData = response;
     print(jsonData);
     CreateOtpChangePassResponse mediaList =
@@ -342,7 +344,7 @@ class MainRepository {
     print(verifyOtChangePassRequest);
     dynamic response =
         await service.postResponse(value, verifyOtChangePassRequest);
-    print(value);
+
     final jsonData = response;
     print(jsonData);
     SignUpInitializeResponse mediaList =
@@ -354,7 +356,7 @@ class MainRepository {
       String value, GetHistoryRequest getHistoryRequest) async {
     print(getHistoryRequest);
     dynamic response = await service.postResponse(value, getHistoryRequest);
-    print(value);
+
     final jsonData = response;
     print(jsonData);
     GetHistoryResponse mediaList = GetHistoryResponse.fromJson(jsonData);
@@ -373,10 +375,22 @@ class MainRepository {
 
   Future<StoreSettingResponse> fetchStoreSettingData(String value) async {
     dynamic response = await service.getResponse(value);
-    print(value);
+
     final jsonData = response;
     print(jsonData);
     StoreSettingResponse mediaList = StoreSettingResponse.fromJson(jsonData);
+    return mediaList;
+  }
+
+  Future<AppleTokenDetailsResponse> getApiTokenForApplePay(
+      String value, String apiKey, EncryptedWallet applePayTokenRequest) async {
+    dynamic response =
+        await service.postCloverResponse(value, apiKey, applePayTokenRequest);
+
+    final jsonData = response;
+    print(" ${jsonData}");
+    AppleTokenDetailsResponse mediaList =
+        AppleTokenDetailsResponse.fromJson(jsonData);
     return mediaList;
   }
 }

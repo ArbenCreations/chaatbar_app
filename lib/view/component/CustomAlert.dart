@@ -6,38 +6,37 @@ class CustomAlert {
   static void showToast({
     required BuildContext context,
     required String? message,
-    Duration duration = const Duration(seconds: 5),
+    Duration duration = const Duration(seconds: 10),
   }) {
     if (message != null && message.isNotEmpty && message != "null") {
-      showDialog(
-        context: context,
-        builder: (BuildContext dialogContext) {
-          // Schedule dialog auto-dismiss after current frame
-          SchedulerBinding.instance.addPostFrameCallback((_) {
-            Future.delayed(duration, () {
-              if (Navigator.of(dialogContext, rootNavigator: true).canPop()) {
-                Navigator.of(dialogContext, rootNavigator: true).pop();
-              }
-            });
-          });
+      Future.microtask(() {
+        if (!context.mounted) return;
 
-          return AlertDialog(
-            title: const Text("Notice"),
-            content: Text(message),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(dialogContext).pop();
-                },
-                child: const Text("OK"),
-              ),
-            ],
-          );
-        },
-      );
+        final snackBar = SnackBar(
+          content: Text(
+            message,
+            style: const TextStyle(color: Colors.white),
+          ),
+          duration: duration,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.black87,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          action: SnackBarAction(
+            label: 'OK',
+            textColor: Colors.white,
+            onPressed: () {
+              // Optional: Add logic here if needed
+            },
+          ),
+        );
+
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(snackBar);
+      });
     }
   }
 }
+

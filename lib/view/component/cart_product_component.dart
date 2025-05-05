@@ -37,11 +37,11 @@ class CartProductComponent extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: 8),
         margin: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Colors.green.shade50,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             width: 0.1,
-            color: Colors.white,
+            color: Colors.grey.shade600,
           ),
           boxShadow: [
             BoxShadow(

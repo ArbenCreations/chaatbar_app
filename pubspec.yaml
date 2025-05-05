@@ -2,10 +2,10 @@ name: TheChaatBar
 description: A new Flutter application.
 
 publish_to: 'none'
-version: 1.0.0+1
+version: 5.0.2+1
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.17.0 <3.0.0'
 
 dependencies:
   flutter_timer_countdown: ^1.0.7
@@ -35,7 +35,7 @@ dependencies:
   firebase_messaging: ^15.2.4
   flutter_local_notifications: ^17.2.1
   share_plus: ^10.0.0
-  connectivity_plus: ^6.0.3
+  connectivity_plus: ^6.1.0
   smooth_page_indicator: ^1.1.0
   dropdown_button2: ^2.3.9
   firebase_auth: ^5.5.1
@@ -61,6 +61,7 @@ dependencies:
   mask_text_input_formatter: ^2.9.0
   apple_pay_flutter: ^1.0.3
   package_info_plus: ^8.3.0
+  lottie: ^3.3.1
 
 dev_dependencies:
   flutter_test:

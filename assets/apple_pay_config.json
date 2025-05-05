@@ -2,7 +2,7 @@
   "provider": "apple_pay",
   "data": {
     "merchantIdentifier": "merchant.com.chaatbar",
-    "displayName": "TheChaiBar",
+    "displayName": "TheChaatBar",
     "merchantCapabilities": [
       "3DS",
       "debit",

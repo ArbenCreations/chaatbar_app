@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:apple_pay_flutter/apple_pay_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,9 +10,11 @@ import 'package:provider/provider.dart';
 import '../../../languageSection/Languages.dart';
 import '../../../model/apis/apiResponse.dart';
 import '../../../model/request/CardDetailRequest.dart';
+import '../../../model/request/EncryptedWalletRequest.dart';
 import '../../../model/request/TransactionRequest.dart';
 import '../../../model/request/successCallbackRequest.dart';
 import '../../../model/response/PaymentDetailsResponse.dart';
+import '../../../model/response/appleTokenDetailsResponse.dart';
 import '../../../model/response/createOrderResponse.dart';
 import '../../../model/response/successCallbackResponse.dart';
 import '../../../model/response/tokenDetailsResponse.dart';
@@ -17,6 +22,7 @@ import '../../../model/viewModel/mainViewModel.dart';
 import '../../../theme/CustomAppColor.dart';
 import '../../../utils/Helper.dart';
 import '../../../utils/Util.dart';
+import '../../component/ApplePayButton.dart';
 import '../../component/CustomAlert.dart';
 import '../../component/connectivity_service.dart';
 import '../../component/custom_circular_progress.dart';
@@ -148,10 +154,8 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
 
   void saveCard() {
     if (_formKey.currentState!.validate()) {
-      // Save card details logic
       print(
           'Card Saved: ${cardNumberController.text}, ${cvvCodeController.text}, ${expiryDateController.text}, ${cardHolderNameController.text}');
-      // Call your API to save card details
     }
   }
 
@@ -168,11 +172,9 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
           color: isDarkMode ? Colors.white : AppColor.Primary,
         ));
       case Status.COMPLETED:
-        print("rwrwr ");
-        //Navigator.pushNamed(context, '/ProfileScreen');
-        CustomAlert.showToast(context: context, message: apiResponse.message);
+        CustomAlert.showToast(context: context, message: mediaList.message);
 
-        return Container(); // Return an empty container as you'll navigate away
+        return Container();
       case Status.ERROR:
         if (nonCapitalizeString("${apiResponse.message}") ==
             nonCapitalizeString(
@@ -181,9 +183,7 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
         } else {
           CustomAlert.showToast(context: context, message: apiResponse.message);
         }
-        return Center(
-            //child: Text('Please try again later!!!'),
-            );
+        return Center();
       case Status.INITIAL:
       default:
         return Center(
@@ -194,62 +194,103 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double screenHeight = MediaQuery.of(context).size.height;
     isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
 
     mediaWidth = MediaQuery.of(context).size.width;
     screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: AppColor.BackgroundColor,
-        toolbarHeight: 65,
+        backgroundColor: Colors.white,
+        elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, color: Colors.black87),
           onPressed: () => _onBackPressed(context),
         ),
-        title: Text("Card Details",
-            style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w600)),
+        title: Text(
+          "Card Details",
+          style: TextStyle(
+            color: Colors.black87,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        centerTitle: true,
       ),
       body: Stack(
         children: [
           SafeArea(
-            child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  CreditCardWidget(
-                    enableFloatingCard: useFloatingAnimation,
-                    glassmorphismConfig: _getGlassmorphismConfig(),
-                    cardNumber: cardNumber,
-                    expiryDate: expiryDate,
-                    cardHolderName: cardHolderName,
-                    cvvCode: cvvCode,
-                    bankName: ' ',
-                    frontCardBorder: useGlassMorphism
-                        ? null
-                        : Border.all(color: Colors.grey),
-                    backCardBorder: useGlassMorphism
-                        ? null
-                        : Border.all(color: Colors.grey),
-                    showBackView: isCvvFocused,
-                    obscureCardNumber: true,
-                    obscureCardCvv: true,
-                    isHolderNameVisible: true,
-                    cardBgColor: cardColor,
-                    backgroundImage:
-                        useBackgroundImage ? 'assets/card_bg.png' : null,
-                    isSwipeGestureEnabled: true,
-                    onCreditCardWidgetChange:
-                        (CreditCardBrand creditCardBrand) {},
-                    customCardTypeIcons: <CustomCardTypeIcon>[],
-                  ),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: <Widget>[
-                          SizedBox(
-                            height: 20,
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    // Credit Card View
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.white, Colors.grey],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 10,
+                            offset: Offset(0, 5),
                           ),
+                        ],
+                      ),
+                      child: CreditCardWidget(
+                        enableFloatingCard: useFloatingAnimation,
+                        cardNumber: cardNumber,
+                        expiryDate: expiryDate,
+                        padding: 4,
+                        cardHolderName: cardHolderName,
+                        cvvCode: cvvCode,
+                        showBackView: isCvvFocused,
+                        obscureCardNumber: true,
+                        obscureCardCvv: true,
+                        isHolderNameVisible: true,
+                        glassmorphismConfig: Glassmorphism(
+                          blurX: 0.0,
+                          blurY: 0.0,
+                          gradient: LinearGradient(
+                            colors: [
+                              Color(0xFFEB001B), // MasterCard Red
+                              Color(0xFFF79E1B), // MasterCard Orange
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
+                        cardBgColor: Colors.transparent,
+                        backgroundImage:
+                            useBackgroundImage ? 'assets/card_bg.png' : null,
+                        isSwipeGestureEnabled: true,
+                        onCreditCardWidgetChange: (_) {},
+                        customCardTypeIcons: [],
+                      ),
+                    ),
+                    SizedBox(height: 30),
+                    // Credit Card Form
+                    Container(
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 8,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
                           CreditCardForm(
                             formKey: formKey,
                             obscureCvv: true,
@@ -278,35 +319,51 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
                           SizedBox(height: 20),
                           GestureDetector(
                             onTap: _onValidate,
-                            child: _buildValidateButton(mediaWidth),
+                            child: Container(
+                              width: mediaWidth * 0.6,
+                              height: 50,
+                              padding: EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                color: Colors.black,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  "Validate",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
-                          /*  Platform.isIOS
+                          SizedBox(
+                            height: 10,
+                          ),
+                          Platform.isIOS
                               ? ApplePayButton(
                                   onPressed: () {
-                                    makePayment(); // your payment logic
+                                    makePayment();
                                   },
                                 )
-                              : SizedBox(),*/
+                              : SizedBox(),
                         ],
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
-          isLoading
-              ? Stack(
-                  children: [
-                    // Block interaction
-                    ModalBarrier(dismissible: false, color: Colors.transparent),
-                    // Loader indicator
-                    Center(
-                      child: CustomCircularProgress(),
-                    ),
-                  ],
-                )
-              : SizedBox(),
+          if (isLoading)
+            Container(
+              color: Colors.black38,
+              child: Center(
+                child: CustomCircularProgress(),
+              ),
+            ),
         ],
       ),
     );
@@ -316,43 +373,121 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
     dynamic applePaymentData;
     List<PaymentItem> paymentItems = [
       PaymentItem(
-          label: 'Label',
-          amount: double.parse("${widget.orderData?.order?.payableAmount}"),
-          shippingcharge: 0.0)
+        label: 'Label',
+        amount: double.parse("${widget.orderData?.order?.totalAmount ?? 0}"),
+        shippingcharge: 0.0,
+      ),
     ];
+
+    setState(() {
+      isLoading = true;
+    });
 
     try {
       applePaymentData = await ApplePayFlutter.makePayment(
-        countryCode: "US",
-        currencyCode: "USD",
+        countryCode: "CA",
+        currencyCode: "CAD",
         paymentNetworks: [
           PaymentNetwork.visa,
           PaymentNetwork.mastercard,
           PaymentNetwork.amex,
         ],
-        merchantIdentifier: "merchant.com.chaatbar",
+        merchantIdentifier: "merchant.com.chaibar",
         paymentItems: paymentItems,
-        customerEmail: "${widget.orderData?.order?.customerEmail}",
-        customerName: "${widget.orderData?.order?.customerName}",
-        companyName: "Concerto Soft",
+        customerEmail: "${widget.orderData?.order?.customerEmail ?? ''}",
+        customerName: "${widget.orderData?.order?.customerName ?? ''}",
+        companyName: "TheChaatBar",
       );
 
-      print("Payment response: ${applePaymentData.toString()}");
+      var parsedData = jsonDecode(applePaymentData["paymentData"]);
+      EncryptedWallet encryptedWallet = EncryptedWallet(
+        applePayPaymentData: ApplePayPaymentData.fromJson(parsedData),
+        addressLine1: "", // optional
+        addressZip: "", // optional
+      );
 
-      if (applePaymentData != null && applePaymentData["ok"] == true) {
-        final paymentId = applePaymentData["transactionIdentifier"];
-        final paymentType = applePaymentData["paymentType"];
+      ApplePayPaymentData applePayPaymentData =
+          encryptedWallet.applePayPaymentData;
 
-        _hitSuccessCallBack(paymentId, paymentType);
+      if (applePayPaymentData.version.isNotEmpty &&
+          applePayPaymentData.data.isNotEmpty &&
+          applePayPaymentData.signature.isNotEmpty) {
+        var requestJson = encryptedWallet.toJson();
+        print("Request JSON: $requestJson");
+
+        // Now send it
+        await _getApiTokenForApplePay(widget.data, encryptedWallet);
       } else {
-        print("Payment was not successful or cancelled.");
-        CustomAlert.showToast(
-          context: context,
-          message: "Something went wrong. Please try with card payment.",
-        );
+        print("Incomplete Apple Pay payment data.");
+        _showPaymentError();
       }
     } on PlatformException catch (e) {
       print('Failed payment: ${e.message}');
+      _showPaymentError();
+    } catch (e) {
+      print('Unexpected error: $e');
+      _showPaymentError();
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  // Helper to show error snack
+  void _showPaymentError() {
+    CustomAlert.showToast(
+      context: context,
+      message: "Something went wrong. Please try again or use a card payment.",
+    );
+  }
+
+  Future<void> _getApiTokenForApplePay(
+      String? apiKey, EncryptedWallet applePayTokenRequest) async {
+    hideKeyBoard();
+    setState(() {
+      isLoading = true;
+    });
+    bool isConnected = await _connectivityService.isConnected();
+    if (!isConnected) {
+      setState(() {
+        isLoading = false;
+        CustomAlert.showToast(
+            context: context,
+            message: '${Languages.of(context)?.labelNoInternetConnection}');
+      });
+    } else {
+      await Provider.of<MainViewModel>(context, listen: false)
+          .getApiTokenForApplePay("https://token.clover.com/v1/tokens",
+              "$appId", applePayTokenRequest);
+      ApiResponse apiResponse =
+          Provider.of<MainViewModel>(context, listen: false).response;
+      getApiAppleTokenResponse(context, apiResponse);
+    }
+  }
+
+  Future<Widget> getApiAppleTokenResponse(
+      BuildContext context, ApiResponse apiResponse) async {
+    AppleTokenDetailsResponse? tokenDetailsResponse =
+        apiResponse.data as AppleTokenDetailsResponse?;
+    setState(() {
+      isLoading = false;
+    });
+    switch (apiResponse.status) {
+      case Status.LOADING:
+        return Center(child: CircularProgressIndicator());
+      case Status.COMPLETED:
+        if (tokenDetailsResponse?.id?.isNotEmpty == true) {
+          _getFinalPaymentApi(tokenDetailsResponse?.id.toString());
+        }
+        return Container(); // Return an empty container as you'll navigate away
+      case Status.ERROR:
+        print("message : ${apiResponse.message}");
+        CustomAlert.showToast(context: context, message: apiResponse.message);
+        return Center();
+      case Status.INITIAL:
+      default:
+        return Center();
     }
   }
 
@@ -403,6 +538,7 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
           context: context,
           builder: (context) => AlertDialog(
             title: Text("Exit"),
+            shape: Border(),
             content: Text("Are you sure you want to leave?"),
             actions: [
               TextButton(
@@ -534,13 +670,8 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
       case Status.LOADING:
         return Center(child: CircularProgressIndicator());
       case Status.COMPLETED:
-        print("getApiTokenResponse : ${widget.data}");
-        // Check if the token was saved successfully
         if (tokenDetailsResponse?.id?.isNotEmpty == true) {
           _getFinalPaymentApi(tokenDetailsResponse?.id.toString());
-          print('Token saved successfully.');
-        } else {
-          print('Failed to save token.');
         }
         return Container(); // Return an empty container as you'll navigate away
       case Status.ERROR:
@@ -555,8 +686,6 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
 
   Future<void> _getFinalPaymentApi(String? source) async {
     hideKeyBoard();
-    // _isValidInput();
-    //Navigator.pushNamed(context, "/VendorScreen");
     const maxDuration = Duration(seconds: 2);
     setState(() {
       isLoading = true;
@@ -601,14 +730,8 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
       case Status.LOADING:
         return Center(child: CircularProgressIndicator());
       case Status.COMPLETED:
-        print("getFinalPaymentApiResponse : ${widget.data}");
-
-        // Check if the token was saved successfully
         if (paymentDetails?.id.isNotEmpty == true) {
-          print('Token saved successfully.');
           _hitSuccessCallBack(paymentDetails?.id, "${paymentDetails?.status}");
-        } else {
-          print('Failed to save token.');
         }
         return Container(); // Return an empty container as you'll navigate away
       case Status.ERROR:
@@ -666,12 +789,9 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
       case Status.LOADING:
         return Center(child: CircularProgressIndicator());
       case Status.COMPLETED:
-        print("getFinalPaymentApiResponse : ${widget.data}");
-
-        print('Token saved successfully.');
         Navigator.pushNamed(context, "/PaymentSuccessfulScreen",
             arguments: successCallbackResponse);
-        return Container(); // Return an empty container as you'll navigate away
+        return Container();
       case Status.ERROR:
         print("message : ${apiResponse.message}");
         CustomAlert.showToast(context: context, message: apiResponse.message);

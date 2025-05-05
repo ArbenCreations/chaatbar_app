@@ -1,6 +1,7 @@
 import 'package:TheChaatBar/model/database/ChaatBarDatabase.dart';
 import 'package:flutter/material.dart';
 
+import '../../../model/database/DatabaseHelper.dart';
 import '../../../model/response/createOrderResponse.dart';
 import '../../../theme/CustomAppColor.dart';
 import '../../../utils/Helper.dart';
@@ -41,6 +42,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
   @override
   void initState() {
     super.initState();
+    initializeDatabase();
     setState(() {
       order = widget.order;
       orderItems = widget.order.orderItems ?? [];
@@ -54,21 +56,12 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
               double.parse("${widget.order.totalAmount}")) /
           100;
     });
-    print("id ${order.id}");
-    Helper.getVendorTheme().then((onValue) {
-      print("theme : $onValue");
-      setState(() {
-        theme = onValue;
-        //setThemeColor();
-      });
-    });
-    $FloorChaatBarDatabase
-        .databaseBuilder('basic_structure_database.db')
-        .build()
-        .then((value) async {
-      this.database = value;
-    });
+
     isDataLoading = true;
+  }
+
+  Future<void> initializeDatabase() async {
+    database = await DatabaseHelper().database;
   }
 
   @override
@@ -287,7 +280,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                                   child: Column(
                                     children: [
                                       _buildDetailCard('Subtotal: ',
-                                          order.totalAmount, false),
+                                          order.payableAmount, false),
                                       _buildDetailCard('Discount: ',
                                           order.discountAmount, false),
                                       _buildDetailCard(
@@ -303,7 +296,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                                           "${hstAmt.toStringAsFixed(1)}",
                                           false),
                                       _buildDetailCard('Grand Total: ',
-                                          order.payableAmount, true),
+                                          order.totalAmount, true),
                                       _buildDetailCard('Transaction Id: ',
                                           order.transactionId, true),
                                     ],

@@ -65,7 +65,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                             Radius.circular(15)),
                                         child: Image.asset(
                                           "assets/appLogo.png",
-                                          height: 80,
+                                          height: 120,
                                           width: 200,
                                           fit: BoxFit.fill,
                                         ),

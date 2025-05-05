@@ -30,6 +30,7 @@ import 'package:flutter/cupertino.dart';
 
 import '../request/CardDetailRequest.dart';
 import '../request/CreateOrderRequest.dart';
+import '../request/EncryptedWalletRequest.dart';
 import '../request/createOtpChangePass.dart';
 import '../request/deleteProfileRequest.dart';
 import '../request/editProfileRequest.dart';
@@ -42,6 +43,7 @@ import '../request/verifyOtpChangePass.dart';
 import '../response/ErrorResponse.dart';
 import '../response/PaymentDetailsResponse.dart';
 import '../response/StoreSettingResponse.dart';
+import '../response/appleTokenDetailsResponse.dart';
 import '../response/createOrderResponse.dart';
 import '../response/createOtpChangePassResponse.dart';
 import '../response/dashboardDataResponse.dart';
@@ -660,6 +662,43 @@ class MainViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Call the media service and gets the data of requested media data of
-  /// an artist.
+  Future<void> getApiTokenForApplePay(
+      String value, String apiKey, EncryptedWallet applePayTokenRequest) async
+  {
+    _apiResponse = ApiResponse.loading('Loading');
+    print("Yess" + "");
+    notifyListeners();
+    try {
+      AppleTokenDetailsResponse tokenDetailsResponse =
+      await MainRepository().getApiTokenForApplePay(value, apiKey, applePayTokenRequest);
+
+      if (tokenDetailsResponse.id?.isNotEmpty == true) {
+        _apiResponse = ApiResponse.completed(tokenDetailsResponse);
+      } else {
+        _apiResponse = ApiResponse.error("Something went wrong");
+      }
+    } catch (e) {
+      print("signInResponse: ${e.toString()}");
+
+      try {
+        // Optional: check if it's a known Clover error format
+        int jsonStartIndex = e.toString().indexOf('{');
+        if (jsonStartIndex == -1) {
+          print("Raw error (not JSON): ${e.toString()}");
+          throw FormatException("Invalid error format: JSON not found");
+        }
+
+        String jsonString = e.toString().substring(jsonStartIndex).trim();
+        final Map<String, dynamic> decodedJson = jsonDecode(jsonString);
+        ErrorResponse errorResponse = ErrorResponse.fromJson(decodedJson);
+        _apiResponse = ApiResponse.error(errorResponse.error?.message);
+        print("signInResponse: ${errorResponse.error?.message}");
+      } catch (jsonError) {
+        print("Raw error (fallback): ${e.toString()}");
+        _apiResponse = ApiResponse.error("An unexpected error occurred. ");
+      }
+    }
+
+    notifyListeners();
+  }
 }

@@ -13,7 +13,7 @@ import 'list_converter.dart';
 part 'ChaatBarDatabase.g.dart'; // the generated code will be there
 
 @TypeConverters([ListConverter, ProductSizeListConverter])
-@Database(version: 1, entities: [CategoryDataDB,ProductDataDB, ProductData, FavoritesDataDb, DashboardDataResponse ])
+@Database(version: 2, entities: [CategoryDataDB,ProductDataDB, ProductData, FavoritesDataDb, DashboardDataResponse ])
 abstract class ChaatBarDatabase extends FloorDatabase {
   CartDataDao get cartDao;
   FavoritesDataDao get favoritesDao;

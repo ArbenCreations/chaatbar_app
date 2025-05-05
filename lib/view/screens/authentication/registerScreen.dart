@@ -123,6 +123,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         Navigator.pushReplacementNamed(context, "/LoginScreen");
       },
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         body: GestureDetector(
           onTap: () {
             hideKeyBoard();
@@ -130,239 +131,244 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Container(
             decoration: BoxDecoration(
                 image: DecorationImage(
-                    image: AssetImage("assets/backtwo.png"), fit: BoxFit.fill)),
+                    image: AssetImage("assets/backtwo.png"), fit: BoxFit.none)),
             child: Stack(
               children: [
-                CustomScrollView(
-                  shrinkWrap: true,
+                SingleChildScrollView(
                   physics: NeverScrollableScrollPhysics(),
                   keyboardDismissBehavior:
                       ScrollViewKeyboardDismissBehavior.onDrag,
-                  slivers: [
-                    SliverToBoxAdapter(
-                      child: Container(
-                        height: 100,
-                        width: mediaWidth,
-                        padding: EdgeInsets.symmetric(horizontal: 0),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(20),
-                          bottomRight: Radius.circular(20),
-                        )),
-                      ),
-                    ),
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      fillOverscroll: true,
-                      child: Container(
-                        height: screenHeight,
-                        margin: EdgeInsets.symmetric(horizontal: 10),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                              "Register",
-                              overflow: TextOverflow.fade,
-                              style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 18.0, vertical: 10),
-                              child: Form(
-                                key: _formKey,
-                                child: Column(
-                                  children: [
-                                    buildTextInput(
-                                        context,
-                                        "Enter ${Languages.of(context)!.labelName}",
-                                        _nameController,
-                                        Icons.account_box_outlined),
-                                    SizedBox(width: 5),
-                                    buildTextInput(
-                                        context,
-                                        "Enter ${Languages.of(context)!.labelLastname}",
-                                        _lastNameController,
-                                        Icons.account_box_outlined),
-                                    _buildEmailInput(
-                                        context,
-                                        "Your ${Languages.of(context)!.labelEmail}",
-                                        _emailController,
-                                        Icons.email_outlined),
-                                    _buildPhoneInput(
-                                        context,
-                                        "Your ${Languages.of(context)!.labelPhoneNumber}",
-                                        _phoneController,
-                                        Icons.call),
-                                    _buildPasswordTextField(
-                                        context,
-                                        Languages.of(context)!.labelPassword,
-                                        _passwordController,
-                                        passwordVisible,
-                                        isDarkMode,
-                                        "password",
-                                        Icons.password),
-                                    _buildPasswordTextField(
-                                        context,
-                                        Languages.of(context)!.labelConfirmPass,
-                                        _confirmPasswordController,
-                                        confirmPasswordVisible,
-                                        isDarkMode,
-                                        "confirmPassword",
-                                        Icons.verified_user),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            Align(
-                              alignment: Alignment.center,
-                              child: _buildConfirmButton(context, null),
-                            ),
-                            SizedBox(
-                              height: 5,
-                            ),
-                            Center(
-                                child: Text(
-                              "OR",
-                              style: TextStyle(
-                                  fontSize: 12, fontWeight: FontWeight.bold),
-                            )),
-                            SizedBox(
-                              height: 5,
-                            ),
-                            Center(
-                              child: GestureDetector(
-                                onTap: () async {
-                                  User? user = await signInWithGoogle(
-                                      context, "$deviceToken");
-
-                                  if (user != null) {
-                                    _showModal(context, user);
-                                    print("Signed in: ${user.displayName}");
-                                  }
-                                },
-                                child: Container(
-                                  height: 50,
-                                  width: mediaWidth * 0.55,
-                                  margin: EdgeInsets.symmetric(
-                                    vertical: 5,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColor.Primary,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: <Widget>[
-                                      Image.asset(
-                                        "assets/google_logo.png",
-                                        width: 22,
-                                        color: Colors.white,
-                                        fit: BoxFit.fill,
-                                      ),
-                                      Container(
-                                        margin: EdgeInsets.only(left: 8.0),
-                                        alignment: Alignment.center,
-                                        child: Text('Sign up with Google',
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.bold)),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Platform.isIOS
-                                ? SizedBox(
-                                    width: mediaWidth * 0.55,
-                                    child: GestureDetector(
-                                      onTap: () async {
-                                        User? user = await context
-                                            .read<AuthenticationProvider>()
-                                            .signInWithApple();
-                                        if (user != null) {
-                                          bool isEmailRelay = user.email?.endsWith(
-                                                  "@privaterelay.appleid.com") ??
-                                              true;
-                                          bool isNameMissing =
-                                              user.displayName == null ||
-                                                  user.displayName!.isEmpty;
-                                          _appleSignIn(user, true);
-                                        } else {
-                                          print(
-                                              "Apple sign-in failed or was canceled.");
-                                        }
-                                      },
-                                      child: Container(
-                                        height: 50,
-                                        decoration: BoxDecoration(
-                                          color: Colors.black,
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(Icons.apple,
-                                                color: Colors.white),
-                                            SizedBox(width: 10),
-                                            Text(
-                                              'Continue with Apple',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 14,
-                                                // <- Change text size here
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  )
-                                : SizedBox(),
-                            SizedBox(
-                              height: 20,
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.end,
+                  child: Container(
+                    height: screenHeight,
+                    margin: EdgeInsets.symmetric(horizontal: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Text(
+                          "Register",
+                          overflow: TextOverflow.fade,
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 18.0, vertical: 10),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
                               children: [
-                                Text(
-                                  "Have an account?",
-                                  style: TextStyle(
-                                      fontSize: 12, color: Colors.black54),
-                                ),
-                                SizedBox(
-                                  width: 4,
-                                ),
-                                GestureDetector(
-                                    onTap: () {
-                                      Navigator.pushNamed(
-                                          context, "/LoginScreen");
-                                    },
-                                    child: Text(
-                                      "Sign in",
-                                      style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.bold),
-                                    )),
+                                buildTextInput(
+                                    context,
+                                    "Enter ${Languages.of(context)!.labelName}",
+                                    _nameController,
+                                    Icons.account_box_outlined),
+                                SizedBox(width: 5),
+                                buildTextInput(
+                                    context,
+                                    "Enter ${Languages.of(context)!.labelLastname}",
+                                    _lastNameController,
+                                    Icons.account_box_outlined),
+                                _buildEmailInput(
+                                    context,
+                                    "Your ${Languages.of(context)!.labelEmail}",
+                                    _emailController,
+                                    Icons.email_outlined),
+                                _buildPhoneInput(
+                                    context,
+                                    "Your ${Languages.of(context)!.labelPhoneNumber}",
+                                    _phoneController,
+                                    Icons.call),
+                                _buildPasswordTextField(
+                                    context,
+                                    Languages.of(context)!.labelPassword,
+                                    _passwordController,
+                                    passwordVisible,
+                                    isDarkMode,
+                                    "password",
+                                    Icons.password),
+                                _buildPasswordTextField(
+                                    context,
+                                    Languages.of(context)!.labelConfirmPass,
+                                    _confirmPasswordController,
+                                    confirmPasswordVisible,
+                                    isDarkMode,
+                                    "confirmPassword",
+                                    Icons.verified_user),
                               ],
                             ),
-                          ],
+                          ),
                         ),
-                      ),
+                        Align(
+                          alignment: Alignment.center,
+                          child: _buildConfirmButton(context, null),
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        Center(
+                            child: Text(
+                          "OR",
+                          style: TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.bold),
+                        )),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        Center(
+                          child: GestureDetector(
+                            onTap: () async {
+                              User? user = await signInWithGoogle(
+                                  context, "$deviceToken");
+
+                              if (user != null) {
+                                _showModal(context, user);
+                                print("Signed in: ${user.displayName}");
+                              }
+                            },
+                            child: Container(
+                              height: 40,
+                              width: mediaWidth * 0.55,
+                              margin: EdgeInsets.symmetric(
+                                vertical: 5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColor.Primary,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: <Widget>[
+                                  Image.asset(
+                                    "assets/google_logo.png",
+                                    width: 22,
+                                    color: Colors.white,
+                                    fit: BoxFit.fill,
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.only(left: 8.0),
+                                    alignment: Alignment.center,
+                                    child: Text('Sign up with Google',
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Platform.isIOS
+                            ? SizedBox(
+                                width: mediaWidth * 0.55,
+                                child: GestureDetector(
+                                  onTap: () async {
+                                    User? user = await context
+                                        .read<AuthenticationProvider>()
+                                        .signInWithApple();
+                                    if (user != null) {
+                                      bool isEmailRelay = user.email?.endsWith(
+                                              "@privaterelay.appleid.com") ??
+                                          true;
+                                      bool isNameMissing =
+                                          user.displayName == null ||
+                                              user.displayName!.isEmpty;
+                                      _appleSignIn(user, true);
+                                    } else {
+                                      print(
+                                          "Apple sign-in failed or was canceled.");
+                                    }
+                                  },
+                                  child: Container(
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.apple, color: Colors.white),
+                                        SizedBox(width: 10),
+                                        Text(
+                                          'Continue with Apple',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14,
+                                            // <- Change text size here
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : SizedBox(),
+                      ],
                     ),
-                  ],
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    margin: EdgeInsets.only(bottom: 30),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          "Have an account?",
+                          style: TextStyle(fontSize: 12, color: Colors.black),
+                        ),
+                        SizedBox(
+                          width: 4,
+                        ),
+                        GestureDetector(
+                            onTap: () {
+                              Navigator.pushNamed(context, "/LoginScreen");
+                            },
+                            child: Text(
+                              "Sign in",
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold),
+                            )),
+                      ],
+                    ),
+
+                    /*       Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          "Not Registered? ",
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.black54,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pushNamed(context, '/RegisterScreen');
+                          },
+                          child: Text(
+                            "${Languages.of(context)?.labelSignup}",
+                            style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.black,
+                                fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),*/
+                  ),
                 ),
                 isLoading
                     ? Stack(
@@ -636,6 +642,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   borderSide: BorderSide(color: Colors.red, width: 0.4)),
               hintText: text,
               hintStyle: TextStyle(fontSize: 11, color: Colors.grey),
+              errorStyle: TextStyle(fontSize: 9, height: 1),
               counterText: "",
               icon: Icon(
                 icon,
@@ -691,7 +698,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
             keyboardType: TextInputType.phone,
             textInputAction: TextInputAction.next,
             inputFormatters: [maskFormatter],
-            maxLength: 12,
             // "+1 " + 10 digits
             style: TextStyle(fontSize: 14),
             decoration: InputDecoration(
@@ -772,7 +778,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 size: 14,
               ),
               counterText: "",
-              errorStyle: TextStyle(fontSize: 11, height: 1),
+              errorStyle: TextStyle(fontSize: 9, height: 1),
               // Reduces error text size
               errorMaxLines: 2,
               // Allows error messages to wrap properly
@@ -803,7 +809,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Container(
       width: mediaWidth,
       padding: EdgeInsets.symmetric(horizontal: 10.0),
-      margin: EdgeInsets.symmetric(vertical: 8.0),
+      margin: EdgeInsets.symmetric(vertical: 6.0),
       decoration: BoxDecoration(
         color: Colors.white,
         shape: BoxShape.rectangle,
@@ -831,26 +837,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
             decoration: InputDecoration(
               border: InputBorder.none,
               hintText: text,
-              hintStyle: TextStyle(fontSize: 11, color: Colors.grey),
               contentPadding:
                   EdgeInsets.symmetric(vertical: 16.0, horizontal: 0.0),
               // Adjust padding
               icon: Icon(
                 icon,
-                size: 14,
+                size: 18,
               ),
               counterText: "",
-              errorStyle: TextStyle(fontSize: 11, height: 1),
-              // Reduces error text size
+              hintStyle: TextStyle(fontSize: 11, color: Colors.grey),
+              errorStyle: TextStyle(fontSize: 9, height: 0.5),
               errorMaxLines: 2,
-              // Allows error messages to wrap properly
               errorBorder: UnderlineInputBorder(
                 borderSide: BorderSide(color: Colors.red, width: 0.4),
               ),
               suffixIcon: GestureDetector(
                 child: Icon(
-                  visibility ? Icons.visibility : Icons.visibility_off,
-                  size: 16,
+                  visibility ? Icons.visibility_off : Icons.visibility,
+                  size: 18,
                 ),
                 onTap: () {
                   setState(
@@ -877,14 +881,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
               if (!hasMinLength(value)) {
                 return "$text must be at least 8 characters long";
               }
-              if (!hasUppercase(value)) {
-                return "$text must contain at least one uppercase letter";
+              if (!RegExp(r'[A-Z]').hasMatch(value)) {
+                return "Password must contain at least one uppercase letter";
               }
-              if (!hasDigit(value)) {
-                return "$text must contain at least one digit";
+              if (!RegExp(r'[0-9]').hasMatch(value)) {
+                return "Password must contain at least one digit";
               }
-              if (!hasSpecialCharacter(value)) {
-                return "$text must contain at least one special character";
+              if (!RegExp(r'[!@#\$&*~]').hasMatch(value)) {
+                return "Password must contain at least one special character";
               }
               if (_passwordController.text != _confirmPasswordController.text) {
                 return "Password doesn't match";
@@ -900,7 +904,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget _buildConfirmButton(BuildContext context, User? user) {
     return MaterialButton(
       onPressed: () async {
-        //_checkValidInput();
         _isValidInput();
         if (_formKey.currentState?.validate() == true) {
         } else {
@@ -1139,14 +1142,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     verticalPadding: 10,
                     onTap: () {
                       if (_formKey.currentState!.validate()) {
-                        String cleanPhone = maskFormatter.getUnmaskedText();
-                        _saveChanges(
-                          cleanPhone,
-                          "googlesign1",
-                          context,
-                          user,
-                        );
-                        //Navigator.pop(context); // Close the bottom sheet
+                        if (phoneController.text.isNotEmpty) {
+                          String cleanPhone = maskFormatter.getUnmaskedText();
+                          _saveChanges(
+                              cleanPhone, "googlesign1", context, user);
+                        } else {
+                          Navigator.pop(context);
+                          CustomToast.showToast(
+                              context: context,
+                              message: "Please enter your number.");
+                        }
+
+                        // // Close the bottom sheet
                       }
                     },
                   ),

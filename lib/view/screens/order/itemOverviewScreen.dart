@@ -194,7 +194,7 @@ class _ItemOverviewScreenState extends State<ItemOverviewScreen>
                                                                     "${widget.data?.order?.discountAmount}"),
                                                                 SizedBox(height: 2),
                                                                 _buildBillingDetail("Amount Paid",
-                                                                    "${widget.data?.order?.payableAmount}",
+                                                                    "${widget.data?.order?.totalAmount}",
                                                                     isTotal: true),
                                                               ],
                                                             ),

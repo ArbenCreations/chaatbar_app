@@ -4,18 +4,17 @@ import 'package:TheChaatBar/model/response/signUpVerifyResponse.dart';
 import 'package:TheChaatBar/model/viewModel/mainViewModel.dart';
 import 'package:TheChaatBar/theme/CustomAppColor.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_timer_countdown/flutter_timer_countdown.dart';
 import 'package:otp_pin_field/otp_pin_field.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../languageSection/Languages.dart';
+import '../../../model/request/signUpRequest.dart';
 import '../../../utils/Util.dart';
 import '../../component/CustomAlert.dart';
 import '../../component/connectivity_service.dart';
 import '../../component/custom_button_component.dart';
 import '../../component/custom_circular_progress.dart';
-import '../../component/toastMessage.dart';
 
 class OTPVerifyScreen extends StatefulWidget {
   final String? data;
@@ -35,20 +34,20 @@ class _OTPVerifyScreenState extends State<OTPVerifyScreen> {
   String dropdownValue = "";
   bool isValid = false;
   bool resendOtp = false;
-  late DateTime endTime;
   String phoneNo = "";
   late double mediaWidth;
   bool isLoading = false;
   List<String> _inputValues = ['', '', '', '', '', ''];
   var _connectivityService = ConnectivityService();
   String otp = '';
+  late DateTime otpEndTime;
 
   @override
   void initState() {
     super.initState();
     isValid = false;
     resendOtp = false;
-    endTime = DateTime.now().add(const Duration(minutes: 3, seconds: 0));
+    otpEndTime = DateTime.now().add(const Duration(minutes: 3, seconds: 0));
     for (var i = 0; i < _focusNodes.length; i++) {
       _focusNodes[i].addListener(() {
         if (_focusNodes[i].hasFocus && _controllers[i].text.isEmpty) {
@@ -57,28 +56,6 @@ class _OTPVerifyScreenState extends State<OTPVerifyScreen> {
         }
       });
     }
-  }
-
-  void _handleKeyTap(String value) {
-    setState(() {
-      for (int i = 0; i < _inputValues.length; i++) {
-        if (_inputValues[i].isEmpty) {
-          _inputValues[i] = value;
-          break;
-        }
-      }
-    });
-  }
-
-  void _handleBackspace() {
-    setState(() {
-      for (int i = _inputValues.length - 1; i >= 0; i--) {
-        if (_inputValues[i].isNotEmpty) {
-          _inputValues[i] = '';
-          break;
-        }
-      }
-    });
   }
 
   @override
@@ -126,9 +103,7 @@ class _OTPVerifyScreenState extends State<OTPVerifyScreen> {
   }
 
   Widget getResendOtpResponse(BuildContext context, ApiResponse apiResponse) {
-    /* PhoneVerifyResponse? phoneVerifyResponse =
-        apiResponse.data as PhoneVerifyResponse?;*/
-    var message = apiResponse?.message.toString();
+    var message = apiResponse.message.toString();
     setState(() {
       isLoading = false;
     });
@@ -136,13 +111,16 @@ class _OTPVerifyScreenState extends State<OTPVerifyScreen> {
       case Status.LOADING:
         return Center(child: CircularProgressIndicator());
       case Status.COMPLETED:
-        // print("rwrwr ${phoneVerifyResponse?.mobileOtp}");
-        //Call Toast
         CustomAlert.showToast(context: context, message: message);
-        // Navigate to the new screen after receiving the response
-        return Container(); // Return an empty container as you'll navigate away
+        // Restart the timer
+        setState(() {
+          otpEndTime = DateTime.now()
+              .add(Duration(minutes: 1, seconds: 30)); // reset timer
+          resendOtp = false;
+        });
+        return Container();
       case Status.ERROR:
-        CustomAlert.showToast(context: context, message: apiResponse?.message);
+        CustomAlert.showToast(context: context, message: apiResponse.message);
         return Center(
           child: Text('Please try again later!!!'),
         );
@@ -278,7 +256,7 @@ class _OTPVerifyScreenState extends State<OTPVerifyScreen> {
                                         true),
                                 _countdownTimer(),
                                 Spacer(),
-                                //if (resendOtp) _resendOtpButton(context)
+                                if (resendOtp) _resendOtpButton(context)
                               ],
                             ),
                           ),
@@ -299,7 +277,6 @@ class _OTPVerifyScreenState extends State<OTPVerifyScreen> {
                                 hideKeyBoard();
                                 if (otp.isNotEmpty && otp.length == 6) {
                                   const maxDuration = Duration(seconds: 2);
-                                  print("otp $otp");
                                   if (otp.isNotEmpty && otp.length == 6) {
                                     setState(() {
                                       isLoading = true;
@@ -353,72 +330,6 @@ class _OTPVerifyScreenState extends State<OTPVerifyScreen> {
                               },
                             ),
                           ),
-
-                          /* CustomNumberKeyboard(onKeyTap: (value) async {
-                            if (value == "clear") {
-                              _handleBackspace();
-                            } else if (value == "submit") {
-                              String otp = _inputValues
-                                  .map((controller) => controller)
-                                  .join();
-                              print("$otp");
-                              if (otp.isNotEmpty && otp.length == 6) {
-                                const maxDuration = Duration(seconds: 2);
-                                print("otp $otp");
-                                if (otp.isNotEmpty && otp.length == 6) {
-                                  setState(() {
-                                    isLoading = true;
-                                  });
-
-                                  bool isConnected =
-                                      await _connectivityService.isConnected();
-                                  if (!isConnected) {
-                                    setState(() {
-                                      isLoading = false;
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                              '${Languages.of(context)?.labelNoInternetConnection}'),
-                                          duration: maxDuration,
-                                        ),
-                                      );
-                                    });
-                                  } else {
-                                    OtpVerifyRequest phoneRequest =
-                                        OtpVerifyRequest(
-                                            customer: CustomerOtpVerify(
-                                      phoneNumber: "${widget.data}",
-                                      mobileOtp: otp,
-                                    ));
-                                    await Provider.of<MainViewModel>(context,
-                                            listen: false)
-                                        .signUpOtpVerifyData(
-                                            "/api/v1/app/temp_customers/verify_customer_signup",
-                                            phoneRequest);
-
-                                    ApiResponse apiResponse =
-                                        Provider.of<MainViewModel>(context,
-                                                listen: false)
-                                            .response;
-                                    getOtpResponseDataWidget(
-                                        context, apiResponse);
-                                  }
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                          '${Languages.of(context)?.labelPleaseEnterValidPhoneNo}'),
-                                      duration: maxDuration,
-                                    ),
-                                  );
-                                }
-                              }
-                            } else {
-                              _handleKeyTap(value);
-                            }
-                          }),*/
-                          //_buildFooter(context),
                         ],
                       ),
                     ),
@@ -446,148 +357,35 @@ class _OTPVerifyScreenState extends State<OTPVerifyScreen> {
 
   Widget _countdownTimer() {
     return resendOtp
-        ? const SizedBox.shrink()
-        : TimerCountdown(
-            endTime: endTime,
-            format: CountDownTimerFormat.minutesSeconds,
-            enableDescriptions: false,
-            spacerWidth: 2,
-            timeTextStyle: TextStyle(fontWeight: FontWeight.w600),
-            onEnd: () {
-              setState(() {
-                resendOtp = true;
+        ? SizedBox()
+        : Row(
+            children: [
+              Icon(
+                Icons.timer,
+                size: 18,
+                color: Colors.black54,
+              ),
+              SizedBox(
+                width: 3,
+              ),
+              TimerCountdown(
+                endTime: otpEndTime,
+                format: CountDownTimerFormat.minutesSeconds,
+                enableDescriptions: false,
+                spacerWidth: 1,
+                timeTextStyle: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    color: Colors.black54),
+                onEnd: () {
+                  setState(() {
+                    resendOtp = true;
               });
             },
+              ),
+            ],
           );
   }
-
-  Widget _buildOtpInput(
-      BuildContext context, double mediaWidth, bool isDarkMode) {
-    return Center(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: List.generate(
-          6,
-          (index) => Container(
-            margin: EdgeInsets.symmetric(horizontal: 5.0),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              border: Border.all(
-                  color: isDarkMode ? Colors.grey : Colors.black54, width: 0.4),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            width: mediaWidth / 8.1,
-            height: 62.0,
-            child: Center(
-              child: Text(
-                _inputValues[index],
-                style: TextStyle(fontSize: 20),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _handleOnChange(int index, String value) {
-    setState(() {
-      _otp[index] = value;
-    });
-
-    // Move focus based on input
-    if (value.isNotEmpty) {
-      if (index < _focusNodes.length - 1) {
-        FocusScope.of(context).requestFocus(_focusNodes[index + 1]);
-      }
-    } else {
-      if (index > 0) {
-        FocusScope.of(context).requestFocus(_focusNodes[index - 1]);
-      }
-    }
-
-    String otpString = _otp.join('');
-    if (otpString.length == 6) {
-      isValid = true;
-    } else {
-      isValid = false;
-    }
-  }
-
-  /* Widget _buildOtpInput(
-      BuildContext context, double mediaWidth, bool isDarkMode) {
-    return Center(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: List.generate(
-          6,
-          (index) => Container(
-            margin: EdgeInsets.symmetric(horizontal: 5.0),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-                border: Border(
-                    top: BorderSide(
-                        color: isDarkMode ? Colors.grey : Colors.black54,
-                        width: 0.4),
-                    bottom: BorderSide(
-                        color: isDarkMode ? Colors.grey : Colors.black54,
-                        width: 0.4),
-                    right: BorderSide(
-                        color: isDarkMode ? Colors.grey : Colors.black54,
-                        width: 0.4),
-                    left: BorderSide(
-                        color: isDarkMode ? Colors.grey : Colors.black54,
-                        width: 0.4)),
-                borderRadius: BorderRadius.circular(6)),
-            width: mediaWidth / 8.1,
-            height: 62.0,
-            child: TextField(
-              textAlignVertical: TextAlignVertical.center,
-              controller: _controllers[index],
-              focusNode: _focusNodes[index],
-              autofocus: index == 0,
-              textAlign: TextAlign.center,
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              maxLength: 1,
-              decoration: InputDecoration(
-                counterText: "", // Remove the counter text
-                border: InputBorder.none,
-              ),
-              style: TextStyle(fontSize: 20),
-              onChanged: (value) {
-                _handleOnChange(index, value);
-              },
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-*/
-
-  void _handleKeyEvent(RawKeyEvent event, int index) {
-    if (event is RawKeyDownEvent) {
-      if (event.logicalKey == LogicalKeyboardKey.backspace) {
-        if (_controllers[index].text.isEmpty && index > 0) {
-          _focusNodes[index].unfocus();
-          _focusNodes[index - 1].requestFocus();
-        }
-      }
-    }
-  }
-
-  void _handleTextChange(String value, int index) {
-    if (value.isNotEmpty) {
-      if (index < 5) {
-        _focusNodes[index].unfocus();
-        _focusNodes[index + 1].requestFocus();
-      } else {
-        _focusNodes[index].unfocus();
-      }
-    }
-  }
-
   _buildLabelText(BuildContext context, String text, int size, bool isBold) {
     return Text(
       text,
@@ -603,12 +401,19 @@ class _OTPVerifyScreenState extends State<OTPVerifyScreen> {
     return GestureDetector(
         onTap: () async {
           phoneNo = widget.data as String;
-          // PhoneRequest phoneRequest = PhoneRequest(
-          //     customer: Customer(
-          //         phoneNumber: phoneNo, mobileOtp: "", countryId: null));
-          /*  await Provider.of<MainViewModel>(context, listen: false)
-              .PhoneVerifyData(
-                  "/api/v1/app/temp_customers/initiate_customer", phoneRequest); */
+
+          SignUpRequest request = SignUpRequest(
+              customer: CustomerSignUp(
+            email: "",
+            password: "",
+            firstName: "",
+            lastName: "",
+            phoneNumber: phoneNo,
+            deviceToken: "",
+          ));
+
+          await Provider.of<MainViewModel>(context, listen: false).signUpData(
+              "api/v1/app/temp_customers/initiate_temp_customer", request);
           ApiResponse apiResponse =
               Provider.of<MainViewModel>(context, listen: false).response;
           getResendOtpResponse(context, apiResponse);
@@ -621,8 +426,4 @@ class _OTPVerifyScreenState extends State<OTPVerifyScreen> {
           ),
         ));
   }
-/*void restartTimer() {
-    countDownTimer.cancel();
-    startTimer();
-  }*/
 }

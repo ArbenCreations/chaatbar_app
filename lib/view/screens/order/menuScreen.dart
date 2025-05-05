@@ -17,6 +17,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../../model/apis/apiResponse.dart';
 import '../../../model/database/ChaatBarDatabase.dart';
+import '../../../model/database/DatabaseHelper.dart';
 import '../../../model/database/dao.dart';
 import '../../../model/request/featuredListRequest.dart';
 import '../../../model/response/categoryDataDB.dart';
@@ -234,8 +235,6 @@ class _MenuScreenState extends State<MenuScreen>
         body: LayoutBuilder(builder:
             (BuildContext context, BoxConstraints viewportConstraints) {
           return Stack(children: [
-            //Image(image: AssetImage("assets/home_background.png"), width: mediaWidth, height: screenHeight,fit: BoxFit.fitHeight,),
-
             SafeArea(
               child: SingleChildScrollView(
                 child: ConstrainedBox(
@@ -248,7 +247,6 @@ class _MenuScreenState extends State<MenuScreen>
                         padding: const EdgeInsets.only(
                             left: 8.0, right: 8.0, top: 2.0),
                         child: Column(
-                          //crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             detailType == "categories"
                                 ? isCategoryLoading
@@ -349,26 +347,24 @@ class _MenuScreenState extends State<MenuScreen>
                                                 }),
                                           )
                                         : CategoryComponent(
-                                            categories: categories,
-                                            mediaWidth: mediaWidth,
-                                            screenHeight: screenHeight,
-                                            isDarkMode: isDarkMode,
-                                            onTap: (int index) {
-                                              setState(() {
-                                                selectedCategory =
-                                                    "${categories[index]?.categoryName}";
-                                                selectedCategoryDetail =
-                                                    categories[index];
-                                                print(
-                                                    "selectedCategory :: $selectedCategory :: ${selectedCategoryDetail?.id}");
+                                      categories: getReorderedCategories(),
+                                      mediaWidth: mediaWidth,
+                                      screenHeight: screenHeight,
+                                      isDarkMode: isDarkMode,
+                                      onTap: (int index) {
+                                        setState(() {
+                                          final reorderedCategories = getReorderedCategories();
+                                          selectedCategory = "${reorderedCategories[index]?.categoryName}";
+                                          selectedCategoryDetail = reorderedCategories[index];
+                                          print("selectedCategory :: $selectedCategory :: ${selectedCategoryDetail?.id}");
 
-                                                isProductsLoading = true;
-                                                getProductDataDB(
-                                                    "${selectedCategoryDetail?.id}");
-                                              });
-                                            },
-                                            primaryColor: primaryColor,
-                                            selectedCategory: selectedCategory))
+                                          isProductsLoading = true;
+                                          getProductDataDB("${selectedCategoryDetail?.id}");
+                                        });
+                                      },
+                                      primaryColor: primaryColor,
+                                      selectedCategory: selectedCategory,
+                                    ))
                                 : SizedBox(),
                             SizedBox(height: 10,),
                             detailType == "menu"
@@ -889,9 +885,7 @@ class _MenuScreenState extends State<MenuScreen>
   }
 
   Future<void> initializeDatabase() async {
-    database = await $FloorChaatBarDatabase
-        .databaseBuilder('basic_structure_database.db')
-        .build();
+    database = await DatabaseHelper().database;
 
     cartDataDao = database.cartDao;
     favoritesDataDao = database.favoritesDao;
@@ -1255,7 +1249,6 @@ class _MenuScreenState extends State<MenuScreen>
           await cartDataDao.findAllCartProducts();
       print("productsList length: ${productsList.length}");
 
-      print("theme : ${data.theme} :: vendorName : ${data.vendorName} ");
       productsList.add(data);
 
       if (mounted) {
@@ -1386,6 +1379,21 @@ class _MenuScreenState extends State<MenuScreen>
     }
     return product;*/
   }
+
+  List<CategoryData?> getReorderedCategories() {
+    if (selectedCategory == null) return categories;
+
+    List<CategoryData?> reordered = List.from(categories);
+    int selectedIndex = reordered.indexWhere((cat) => cat?.categoryName == selectedCategory);
+
+    if (selectedIndex != -1) {
+      final selectedItem = reordered.removeAt(selectedIndex);
+      reordered.insert(0, selectedItem);
+    }
+
+    return reordered;
+  }
+
 
   void setThemeColor() {
     if (widget.data?.theme == "blue") {

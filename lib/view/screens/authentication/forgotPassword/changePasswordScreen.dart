@@ -1,7 +1,6 @@
 import 'package:TheChaatBar/model/request/verifyOtpChangePass.dart';
 import 'package:TheChaatBar/model/response/signUpInitializeResponse.dart';
 import 'package:TheChaatBar/theme/CustomAppColor.dart';
-import 'package:TheChaatBar/view/component/toastMessage.dart';
 import 'package:TheChaatBar/view/screens/authentication/loginScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -54,11 +53,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     phoneNumberValid = false;
     newPasswordVisible = true;
     confirmPasswordVisible = true;
-    //_fetchData();
+
     for (var i = 0; i < _focusNodes.length; i++) {
       _focusNodes[i].addListener(() {
         if (_focusNodes[i].hasFocus && _controllers[i].text.isEmpty) {
-          // Automatically select all text when the field gains focus
           _controllers[i].selection = TextSelection(
               baseOffset: 0, extentOffset: _controllers[i].text.length);
         }
@@ -85,16 +83,16 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       case Status.LOADING:
         return Center(child: CircularProgressIndicator());
       case Status.COMPLETED:
-        print("rwrwr ");
-        //Navigator.pushNamed(context, '/ProfileScreen');
-        CustomAlert.showToast(context: context, message: apiResponse.message);
+        CustomAlert.showToast(
+            context: context, message: mediaList?.message ?? "Successful!!");
         Helper.clearAllSharedPreferences();
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => LoginScreen()),
-          (Route<dynamic> route) => false,
-        );
-
-        return Container(); // Return an empty container as you'll navigate away
+        Future.delayed(Duration(milliseconds: 150), () {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => LoginScreen()),
+            (Route<dynamic> route) => false,
+          );
+        });
+        return Container();
       case Status.ERROR:
         if (nonCapitalizeString("${apiResponse.message}") ==
             nonCapitalizeString(
@@ -103,9 +101,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         } else {
           CustomAlert.showToast(context: context, message: apiResponse.message);
         }
-        return Center(
-            //child: Text('Please try again later!!!'),
-            );
+        return Center();
       case Status.INITIAL:
       default:
         return Center(
@@ -128,7 +124,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           leading: IconButton(
             icon: Icon(Icons.arrow_back),
             onPressed: () {
-              Navigator.pop(context);
+              hideKeyBoard();
+              Future.delayed(Duration(milliseconds: 150), () {
+                Navigator.pop(context);
+              });
             },
           ),
           title: Text(
@@ -136,7 +135,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w600),
           ),
         ),
-        //backgroundColor: Theme.of(context).backgroundColor,
         body: Stack(
           children: [
             SingleChildScrollView(
@@ -146,13 +144,26 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     Center(
                       child: Image(
                         alignment: Alignment.topLeft,
-                        //width: mediaWidth*0.8,
                         height: screenHeight * 0.27,
                         image: AssetImage("assets/changePass.png"),
                         fit: BoxFit.fitWidth,
                       ),
                     ),
-                    SizedBox(height: 30),
+                    SizedBox(height: 10),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Text(
+                        "Please enter your new password below to reset your current password. Make sure it's strong and secure.",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: isDarkMode ? Colors.white70 : Colors.black87,
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: 20),
                     _buildPasswordTextFields(isDarkMode),
                     SizedBox(height: 15),
                     _buildSubmitButton(),

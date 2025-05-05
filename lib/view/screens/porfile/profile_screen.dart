@@ -1,12 +1,14 @@
 import 'package:TheChaatBar/model/database/ChaatBarDatabase.dart';
 import 'package:TheChaatBar/model/request/editProfileRequest.dart';
-import 'package:TheChaatBar/model/response/couponListResponse.dart';
 import 'package:flutter/material.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../languageSection/Languages.dart';
 import '../../../model/apis/apiResponse.dart';
+import '../../../model/database/DatabaseHelper.dart';
 import '../../../model/response/profileResponse.dart';
 import '../../../model/viewModel/mainViewModel.dart';
 import '../../../theme/CustomAppColor.dart';
@@ -16,13 +18,8 @@ import '../../component/CustomAlert.dart';
 import '../../component/connectivity_service.dart';
 import '../../component/custom_circular_progress.dart';
 import '../../component/session_expired_dialog.dart';
-import '../../component/toastMessage.dart';
 
 class ProfileScreen extends StatefulWidget {
-  final Function(ThemeMode) onThemeChanged;
-
-  ProfileScreen({required this.onThemeChanged});
-
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
 }
@@ -65,39 +62,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final List<String> themeType = ["Light", "Dark", "Default"];
   String selectedValue = "";
   Uri _url = Uri.parse('');
+  String _appVersion = '';
 
   @override
   void initState() {
     super.initState();
-    _fetchData();
+    _loadAppVersion();
+    initializeDatabase();
     Helper.getProfileDetails().then((onValue) {
       setState(() {
-        customerId = int.parse("${onValue?.id ?? 0}"); //?? VendorData();
+        customerId = int.parse("${onValue?.id ?? 0}");
       });
     });
 
     Helper.getVendorDetails().then((onValue) {
-      print("theme : $onValue");
       setState(() {
-        theme = onValue?.theme;
         vendorId = "${onValue?.id}";
         _url = Uri.parse("https://www.thechaatbar.ca/");
-        //setThemeColor();
       });
     });
 
     Helper.getAppThemeMode().then((appTheme) {
       setState(() {
-        //print("App theme $appTheme");
         selectedValue = "$appTheme" != "null" ? "$appTheme" : themeType.first;
       });
     });
-    $FloorChaatBarDatabase
-        .databaseBuilder('basic_structure_database.db')
-        .build()
-        .then((value) async {
-      this.database = value;
-    });
+
     firstName = "";
     lastName = "";
     email = "";
@@ -105,11 +95,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _fetchDataFromPref();
   }
 
+  Future<void> _loadAppVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    setState(() {
+      _appVersion = '${info.version} (${info.buildNumber})';
+    });
+  }
+
+  Future<void> initializeDatabase() async {
+    database = await DatabaseHelper().database;
+  }
+
   Future<void> _launchUrl() async {
     if (!await launchUrl(_url)) {
       throw Exception('Could not launch $_url');
     }
   }
+
+  final maskFormatter = MaskTextInputFormatter(
+    mask: '(###) ###-####',
+    filter: {"#": RegExp(r'[0-9]')},
+    type: MaskAutoCompletionType.lazy,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -130,316 +137,256 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Stack(
             children: [
               SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: 2, vertical: 0),
-                child: Stack(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: mediaWidth,
-                          //height: screenHeight * 0.25,
-                          padding: const EdgeInsets.only(
-                              left: 10.0, right: 10, top: 10, bottom: 20),
-                          margin: const EdgeInsets.only(
-                              left: 10.0, right: 10, top: 20),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Align(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    _launchUrl();
-                                  },
-                                  child: IntrinsicWidth(
-                                    child: Container(
-                                      child: Text(
-                                        "Explore",
-                                        style: TextStyle(
-                                            color: Colors.red,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 15, vertical: 3),
-                                      margin: EdgeInsets.only(bottom: 15),
-                                      alignment: Alignment.topRight,
-                                      decoration: BoxDecoration(
-                                          color: Colors.red.shade50,
-                                          borderRadius:
-                                              BorderRadius.circular(20)),
-                                    ),
-                                  ),
-                                ),
-                                alignment: Alignment.topRight,
-                              ),
-                              Text(
-                                "${firstName ?? ""} ${lastName ?? ""}"
+                    // Profile Card
+                    Card(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      shadowColor: Colors.black12,
+                      semanticContainer: true,
+                      borderOnForeground: true,
+                      elevation: 1,
+                      child: Padding(
+                        padding: EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 6),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CircleAvatar(
+                              radius: 30,
+                              backgroundColor: Colors.red.shade100,
+                              child: Text(
+                                (firstName?.substring(0, 1) ?? '')
                                     .toUpperCase(),
                                 style: TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.bold),
-                              ),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.email,
-                                    size: 14,
-                                    color: Colors.grey,
-                                  ),
-                                  SizedBox(
-                                    width: 4,
-                                  ),
-                                  Text(
-                                    "${email ?? ""}",
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 5),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.phone_iphone,
-                                    size: 14,
-                                    color: Colors.grey,
-                                  ),
-                                  SizedBox(
-                                    width: 4,
-                                  ),
-                                  Text(
-                                    "${phoneNo ?? ""}",
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(
-                          height: 0.5,
-                          child: Container(
-                            decoration: BoxDecoration(
-                                color: Colors.grey,
-                                borderRadius: BorderRadius.circular(10)),
-                            margin: EdgeInsets.symmetric(horizontal: 20),
-                          ),
-                        ),
-                        Align(
-                          alignment: Alignment.center,
-                          child: Container(
-                            width: mediaWidth * 0.9,
-                            margin: EdgeInsets.only(top: 20),
-                            child: Card(
-                              elevation: 0,
-                              color: AppColor.Primary.withOpacity(0.15),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8)),
-                              shadowColor: Colors.black,
-                              margin: EdgeInsets.symmetric(vertical: 10),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8.0, vertical: 15),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    SizedBox(
-                                      height: 5,
-                                    ),
-                                    GestureDetector(
-                                        onTap: () {
-                                          Navigator.pushNamed(
-                                              context, "/ActiveOrdersScreen");
-                                        },
-                                        child:
-                                            _buildCount("$active", "Active")),
-                                    SizedBox(
-                                      height: 5,
-                                    ),
-                                    _buildCount("$completed", "Completed"),
-                                    SizedBox(
-                                      height: 5,
-                                    ),
-                                  ],
-                                ),
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.red),
                               ),
                             ),
-                          ),
+                            SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "${firstName ?? ""} ${lastName ?? ""}"
+                                        .trim()
+                                        .toUpperCase(),
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.email,
+                                          size: 16, color: Colors.grey),
+                                      SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(email ?? "",
+                                            style: TextStyle(
+                                                fontSize: 13,
+                                                color: Colors.grey[800]),
+                                            overflow: TextOverflow.ellipsis),
+                                      ),
+                                    ],
+                                  ),
+                                  if (phoneNo != null && phoneNo != "null") ...[
+                                    SizedBox(height: 6),
+                                    Row(
+                                      children: [
+                                        Icon(Icons.phone,
+                                            size: 16, color: Colors.grey),
+                                        SizedBox(width: 6),
+                                        Text(
+                                            "+1 ${maskFormatter.maskText(phoneNo!)}",
+                                            style: TextStyle(
+                                                fontSize: 13,
+                                                color: Colors.grey[800])),
+                                      ],
+                                    ),
+                                  ],
+                                  SizedBox(height: 10),
+                                  Align(
+                                    alignment: Alignment.bottomRight,
+                                    child: GestureDetector(
+                                      onTap: _launchUrl,
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 6),
+                                        decoration: BoxDecoration(
+                                          color: Colors.green.shade50,
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(Icons.open_in_new,
+                                                color: Colors.black, size: 14),
+                                            SizedBox(width: 4),
+                                            Text("Explore",
+                                                style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 12)),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                        Container(
-                          child: Column(
-                            children: [
-                              SizedBox(
-                                height: 10,
-                              ),
-                              _buildItem(
-                                  Icons.edit_document,
-                                  "Personal Information",
-                                  "Edit your profile",
-                                  "EditInformationScreen"),
-                              SizedBox(
-                                height: 5,
-                              ),
-                              SizedBox(
-                                height: 0.2,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                      color: Colors.grey[600],
-                                      borderRadius: BorderRadius.circular(10)),
-                                  margin: EdgeInsets.symmetric(horizontal: 20),
-                                ),
-                              ),
-                              SizedBox(
-                                height: 5,
-                              ),
-                              _buildItem(
-                                  Icons.card_giftcard_rounded,
-                                  "Available Coupons",
-                                  "Click here to get exciting offers!",
-                                  ""),
-
-                              //_buildItem(Icons.language,"Language","English",""),
-                              // _buildTheme(),
-                              SizedBox(
-                                height: 0.2,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                      color: Colors.grey[600],
-                                      borderRadius: BorderRadius.circular(10)),
-                                  margin: EdgeInsets.symmetric(horizontal: 20),
-                                ),
-                              ),
-                              /*_buildItem(Icons.contact_support_rounded,
-                                  "Help & Support", "Help & Support", "")*/
-                              /* _buildItem(Icons.perm_contact_cal_sharp,
-                                  "Contact Us", "Contact Us", ""),*/
-                              _buildItem(
-                                  Icons.logout, "Logout", "", "LoginScreen"),
-                              SizedBox(
-                                height: 2,
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(
-                          height: 5,
-                        ),
-                        /* Card(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          shadowColor: Colors.black,
-                          child: Column(
-                            children: [
-                              SizedBox(height: 2,),
-                              SizedBox(height: 2,),
-                            ],
-                          ),
-                        ),
-                        SizedBox(height: 5,),
-                        Card(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          shadowColor: Colors.black,
-                          child: Column(
-                            children: [
-                              SizedBox(height: 2,),
-                              SizedBox(height: 2,),
-                            ],
-                          ),
-                        )*/
-                      ],
+                      ),
                     ),
+
+                    SizedBox(height: 5),
+
+                    // Divider
+                    Divider(thickness: 1, color: Colors.grey.shade300),
+                    SizedBox(height: 15),
+                    // Active / Completed
+                    Card(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
+                      color: Colors.green.shade50,
+                      child: Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            GestureDetector(
+                              onTap: () => Navigator.pushNamed(
+                                  context, "/ActiveOrdersScreen"),
+                              child: _buildCount(active.toString(), "Active",
+                                  isPrimary: true),
+                            ),
+                            VerticalDivider(
+                                color: Colors.grey.shade300, thickness: 1),
+                            _buildCount(completed.toString(), "Completed"),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: 10),
+
+                    // Settings Items
+                    _buildItem(
+                        Icons.person_outline_rounded,
+                        "Personal Information",
+                        "Edit your profile",
+                        "/EditProfileScreen"),
+                    Divider(thickness: 1, color: Colors.black12),
+                    _buildItem(Icons.card_giftcard_rounded, "Available Coupons",
+                        "Click here to get exciting offers!", "/CouponsScreen"),
+                    Divider(thickness: 1, color: Colors.black12),
+                    _buildItem(Icons.logout, "Logout", "", "Logout"),
+
+                    SizedBox(height: 24),
                   ],
                 ),
               ),
-              isLoading
-                  ? Stack(
-                      children: [
-                        // Block interaction
-                        ModalBarrier(
-                            dismissible: false, color: Colors.transparent),
-                        // Loader indicator
-                        Center(
-                          child: CustomCircularProgress(),
-                        ),
-                      ],
-                    )
-                  : SizedBox(),
+
+              // App version
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: 10),
+                  child: Text(
+                    'Version $_appVersion',
+                    style: TextStyle(color: Colors.grey[400], fontSize: 10),
+                  ),
+                ),
+              ),
+
+              // Loading overlay
+              if (isLoading)
+                Stack(
+                  children: [
+                    ModalBarrier(dismissible: false, color: Colors.transparent),
+                    Center(child: CustomCircularProgress()),
+                  ],
+                ),
             ],
           ),
         ),
       ),
-    );
-  }
 
-  Widget _buildLoadingIndicator() {
-    return Stack(
-      children: [
-        ModalBarrier(dismissible: false, color: Colors.black.withOpacity(0.3)),
-        Center(
-            child: CircularProgressIndicator(
-                color: isDarkMode ? Colors.white : Colors.deepOrange)),
-      ],
     );
   }
 
   Widget _buildItem(
-      IconData icon, String value, String detail, String navigation) {
+      IconData icon, String title, String subtitle, String routeName) {
     return GestureDetector(
       onTap: () {
-        if (value == "Logout") {
+        if (routeName == "Logout") {
           if (!isLoading) _showLogOutDialog();
-        } else if (value == "Personal Information") {
-          Navigator.pushNamed(context, "/EditProfileScreen");
-        } else if (value == "Available Coupons") {
-          Navigator.pushNamed(context, "/CouponsScreen");
+        } else {
+          Navigator.pushNamed(context, routeName);
         }
       },
       child: Card(
         elevation: 0,
-        color: Colors.transparent,
-        child: Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(14),
+        color: AppColor.BackgroundColor,
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 5),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
-                padding: EdgeInsets.all(6),
+                padding: EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(100)),
+                  color: Colors.green.shade50,
+                  shape: BoxShape.circle,
+                ),
                 child: Icon(
                   icon,
+                  color: Colors.green.shade700,
                   size: 20,
-                  color: Colors.grey[600],
                 ),
               ),
-              SizedBox(width: 5),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    value,
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                  ),
-                  value != "Logout"
-                      ? Text(
-                          detail,
-                          style:
-                              TextStyle(fontSize: 10, color: Colors.grey[500]),
-                        )
-                      : SizedBox(),
-                ],
+              SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    if (subtitle.isNotEmpty) SizedBox(height: 4),
+                    if (subtitle.isNotEmpty)
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                  ],
+                ),
               ),
-              Spacer(),
               Icon(
                 Icons.arrow_forward_ios_rounded,
-                size: 13,
-              )
+                size: 14,
+                color: Colors.grey.shade500,
+              ),
             ],
           ),
         ),
@@ -447,55 +394,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildCount(String count, String text) {
+  Widget _buildCount(String count, String label, {bool isPrimary = false}) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          "$count",
+          count,
           style: TextStyle(
-              fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black54),
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: isPrimary ? AppColor.Primary : Colors.black,
+          ),
         ),
+        SizedBox(height: 4),
         Text(
-          "$text",
+          label,
           style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.normal,
-              color: Colors.grey[600]),
-        )
+            fontSize: 14,
+            color: Colors.grey[600],
+          ),
+        ),
       ],
     );
   }
 
-  Future<void> _fetchData() async {
-    bool isConnected = await _connectivityService.isConnected();
-    print(("isConnected - ${isConnected}"));
-    if (!isConnected) {
-      setState(() {
-        isLoading = false;
-        isInternetConnected = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(Languages.of(context)!.labelNoInternetConnection),
-          duration: maxDuration,
-        ),
-      );
-    } else {
-      hideKeyBoard();
-      setState(() {
-        isLoading = true;
-      });
-
-      await Provider.of<MainViewModel>(context, listen: false)
-          .fetchProfile("/api/v1/app/customers/$vendorId/get_profile");
-
-      if (mounted) {
-        ApiResponse apiResponse =
-            Provider.of<MainViewModel>(context, listen: false).response;
-        getProfileResponse(context, apiResponse);
-      }
-    }
-  }
 
   Future<void> _saveChanges() async {
     bool isConnected = await _connectivityService.isConnected();
@@ -620,342 +542,97 @@ class _ProfileScreenState extends State<ProfileScreen> {
       useSafeArea: true,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.circular(20), // Adjust the radius as needed
-          ),
-          insetPadding: EdgeInsets.zero,
-          elevation: 5,
-          titleTextStyle: TextStyle(
-              fontSize: 20,
-              color: isDarkMode ? Colors.white : AppColor.Primary,
-              fontWeight: FontWeight.bold),
-          title: Center(
-              child: Text(
-            "Logout",
-            style: TextStyle(fontSize: 20),
-          )),
-          content: IntrinsicHeight(
-            child: Container(
-              //height: screenHeight * 0.25,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Center(
-                          child: Text(
-                        "Are you sure you want to logout?",
-                        textAlign: TextAlign.center,
-                      )),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 15,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        width: mediaWidth * 0.33,
-                        child: TextButton(
-                          child: Text("Yes"),
-                          onPressed: () {
-                            Helper.clearAllSharedPreferences();
-                            database.favoritesDao.clearAllFavoritesProduct();
-                            database.cartDao.clearAllCartProduct();
-                            database.categoryDao.clearAllCategories();
-                            database.productDao.clearAllProducts();
-                            database.cartDao.clearAllCartProduct();
-                            Navigator.of(context).pushNamedAndRemoveUntil(
-                              '/LoginScreen',
-                              (Route<dynamic> route) => false,
-                            );
-                          },
-                        ),
-                      ),
-                      SizedBox(
-                        width: 5,
-                      ),
-                      Container(
-                        width: mediaWidth * 0.33,
-                        child: TextButton(
-                          style: ButtonStyle(
-                            backgroundColor:
-                                WidgetStatePropertyAll(Colors.redAccent),
-                          ),
-                          child: Text("No"),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: <Widget>[],
-        );
-      },
-    );
-  }
-
-  Future<void> _showEditProfileDialog() async {
-    _nameController.text = "$firstName";
-    _lastNameController.text = "$lastName";
-    _emailController.text = "$email";
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: true,
-      useSafeArea: true,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.circular(10), // Adjust the radius as needed
-          ),
-          insetPadding: EdgeInsets.symmetric(horizontal: 28, vertical: 5),
-          elevation: 5,
-          icon: Align(
-              alignment: Alignment.topRight,
-              child: GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: Icon(
-                    Icons.close,
-                    size: 20,
-                  ))),
-          iconPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          titleTextStyle: TextStyle(
-              fontSize: 20,
-              color: isDarkMode ? Colors.white : AppColor.Primary,
-              fontWeight: FontWeight.bold),
-          title: Center(
-              child: Text(
-            "Edit Profile",
-          )),
-          content: IntrinsicHeight(
-            child: Container(
-              //height: screenHeight * 0.25,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        height: 10,
-                      ),
-                      _buildNameInput(
-                          context,
-                          Languages.of(context)!.labelName,
-                          _nameController,
-                          Icon(
-                            Icons.person,
-                            size: 18,
-                            color: AppColor.Secondary,
-                          )),
-                      SizedBox(
-                        height: 8,
-                      ),
-                      _buildNameInput(
-                          context,
-                          Languages.of(context)!.labelLastname,
-                          _lastNameController,
-                          Icon(
-                            Icons.person,
-                            size: 18,
-                            color: AppColor.Secondary,
-                          )),
-                      SizedBox(
-                        height: 8,
-                      ),
-                      _buildNameInput(
-                          context,
-                          Languages.of(context)!.labelEmail,
-                          _emailController,
-                          Icon(
-                            Icons.mail,
-                            size: 16,
-                            color: AppColor.Secondary,
-                          )),
-                      SizedBox(
-                        height: 25,
-                      ),
-                      Container(
-                        width: mediaWidth * 0.33,
-                        child: TextButton(
-                          style: ButtonStyle(
-                              backgroundColor:
-                                  WidgetStatePropertyAll(AppColor.Secondary)),
-                          child: Text("Save"),
-                          onPressed: () {
-                            setState(() {
-                              editProfile = true;
-                            });
-                            _saveChanges();
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: <Widget>[],
-        );
-      },
-    );
-  }
-
-  Widget _buildNameInput(BuildContext context, String text,
-      TextEditingController nameController, Icon icon) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 4.0),
-      margin: EdgeInsets.symmetric(vertical: 4.0),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-      child: Row(
-        children: [
-          SizedBox(width: 8),
-          Container(
-            width: mediaWidth * 0.65,
-            padding: EdgeInsets.only(right: 4),
-            child: TextField(
-              style: TextStyle(
-                fontSize: 12.0,
-              ),
-              obscureText: false,
-              obscuringCharacter: "*",
-              controller: nameController,
-              onChanged: (value) {
-                //_isValidInput();
-              },
-              onSubmitted: (value) {},
-              keyboardType: TextInputType.visiblePassword,
-              textInputAction: TextInputAction.done,
-              decoration: InputDecoration(
-                enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(width: 0.5, color: Colors.grey)),
-                border: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(width: 0.5, color: AppColor.Primary)),
-                focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(width: 1, color: AppColor.Primary)),
-                hintText: text,
-                labelText: "$text",
-                hintStyle: TextStyle(fontSize: 13, color: Colors.grey),
-                //icon: icon,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void openBottomSheet(BuildContext context,
-      List<PrivateCouponDetailsResponse>? couponsResponse) {
-    showModalBottomSheet(
-      context: context,
-      shape: Border(),
-      scrollControlDisabledMaxHeightRatio: 0.85,
-      isScrollControlled: false,
-      builder: (context) {
-        return Container(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          // Optional padding for better spacing
-          child: Column(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          elevation: 10,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          content: Column(
             mainAxisSize: MainAxisSize.min,
-            // Ensures the column takes only the required space
             children: [
-              // Static "Close" button
-              GestureDetector(
-                onTap: () => Navigator.of(context).pop(),
-                child: Align(
-                  alignment: Alignment.topRight,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                    decoration: ShapeDecoration(
-                      color: AppColor.Primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
+              // Icon
+              CircleAvatar(
+                backgroundColor: Colors.red.shade50,
+                radius: 30,
+                child: Icon(Icons.logout, color: Colors.red, size: 30),
+              ),
+              const SizedBox(height: 20),
+
+              // Title
+              Text(
+                "Logout?",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: isDarkMode ? Colors.white : AppColor.Primary,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Subtitle
+              Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(text: "Are you sure you want to "),
+                    TextSpan(
+                      text: "log out",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, color: Colors.red),
+                    ),
+                    TextSpan(text: " from your account?"),
+                  ],
+                ),
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 24),
+
+              // Action buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (_) => Center(child: CircularProgressIndicator()),
+                        );
+                        await Helper.clearAllSharedPreferences();
+                        await database.favoritesDao.clearAllFavoritesProduct();
+                        await database.cartDao.clearAllCartProduct();
+                        await database.categoryDao.clearAllCategories();
+                        await database.productDao.clearAllProducts();
+
+                        Navigator.of(context)
+                            .pushNamedAndRemoveUntil('/LoginScreen', (_) => false);
+                      },
+                      icon: Icon(Icons.exit_to_app, size: 18, color: Colors.white,),
+                      label: Text("Yes, Logout"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
-                    margin: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    child: Text(
-                      "Close",
-                      style: TextStyle(color: Colors.white),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text("Cancel"),
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-
-              // Static text outside the list
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                child: Text(
-                  "Coupons",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                ),
-              ),
-
-              // Divider line
-              Container(
-                margin: EdgeInsets.symmetric(vertical: 10),
-                width: double.infinity,
-                color: isDarkMode ? Colors.white : Colors.transparent,
-                height: 0.4,
-              ),
-
-              // List of coupons inside a SingleChildScrollView to prevent overflow
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      ListView.builder(
-                        itemCount: couponsResponse?.length ?? 0,
-                        // Make sure it's safe to access
-                        shrinkWrap: true,
-                        // Ensures ListView takes only as much space as needed
-                        physics: NeverScrollableScrollPhysics(),
-                        // Prevents scrolling conflicts with SingleChildScrollView
-                        padding: EdgeInsets.only(bottom: 10),
-                        itemBuilder: (context, index) {
-                          return Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              appliedCouponWidget(couponsResponse![index]),
-                              // Your existing widget
-                              Container(
-                                margin: EdgeInsets.symmetric(vertical: 10),
-                                width: mediaWidth * 0.5,
-                                color: isDarkMode
-                                    ? Colors.white
-                                    : Colors.transparent,
-                                height: 0.4,
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+                ],
+              )
             ],
           ),
         );
@@ -963,83 +640,5 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget appliedCouponWidget(PrivateCouponDetailsResponse couponsResponse) {
-    return Container(
-      decoration: BoxDecoration(
-        color: isDarkMode ? AppColor.CardDarkColor : Colors.blue[50],
-      ),
-      padding: EdgeInsets.only(left: 10, right: 0, top: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(50),
-                  color: AppColor.Secondary),
-              padding: EdgeInsets.all(5),
-              child: Icon(
-                Icons.discount,
-                color: Colors.white,
-                size: 18,
-              )),
-          SizedBox(
-            width: 15,
-          ),
-          Container(
-            width: mediaWidth * 0.75,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                /*  Text(
-                  "Expire At => ${convertDateTimeFormat("${couponsResponse?.expireAt?.toString().toUpperCase()}")}",
-                  style: TextStyle(fontSize: 11),
-                ),*/
-                SizedBox(
-                  height: 2,
-                ),
-                Text("Code : ${couponsResponse?.couponCode?.toUpperCase()}",
-                    style:
-                        TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                SizedBox(
-                  height: 2,
-                ),
-                Text("${couponsResponse?.description?.toUpperCase()}",
-                    style:
-                        TextStyle(fontSize: 11, fontWeight: FontWeight.normal)),
-                SizedBox(
-                  height: 2,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                        "Min Amt. : \$${couponsResponse.minCartAmt?.toUpperCase()}",
-                        style: TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.normal)),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Text(
-                        "Max Amt. : \$${couponsResponse.maxDiscountAmt?.toUpperCase()}",
-                        style: TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.normal))
-                  ],
-                ),
-                SizedBox(
-                  height: 5,
-                ),
-                Align(
-                  alignment: Alignment.bottomRight,
-                  child: Text("You can use coupon code to apply.",
-                      style: TextStyle(
-                          fontSize: 10, fontWeight: FontWeight.normal)),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
 }

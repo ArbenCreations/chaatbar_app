@@ -52,13 +52,6 @@ class _ActiveOrUpcomingScreenState extends State<ActiveOrdersScreen>
   @override
   void initState() {
     super.initState();
-    Helper.getVendorTheme().then((onValue) {
-      print("theme : $onValue");
-      setState(() {
-        theme = onValue;
-        //setThemeColor();
-      });
-    });
     _tabController = TabController(length: 2, vsync: this);
     _scrollController.addListener(_activeLoadMore);
     _fetchDataFuture = _fetchData(_currentPage, false, selectedOrderType);

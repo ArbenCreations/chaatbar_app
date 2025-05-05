@@ -12,7 +12,7 @@ class ApplePayButton extends StatelessWidget {
       onTap: onPressed,
       child: Container(
         height: 50,
-        width: mediaWidth * 0.7,
+        width: mediaWidth * 0.6,
         decoration: BoxDecoration(
           color: Colors.black,
           borderRadius: BorderRadius.circular(10),

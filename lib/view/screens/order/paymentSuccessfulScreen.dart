@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../model/database/ChaatBarDatabase.dart';
+import '../../../model/database/DatabaseHelper.dart';
 import '../../../model/database/dao.dart';
 import '../../../model/response/successCallbackResponse.dart';
 import '../../../utils/Helper.dart';
@@ -36,9 +37,7 @@ class _PaymentSuccessfulScreenState extends State<PaymentSuccessfulScreen>
   }
 
   Future<void> initializeDatabase() async {
-    database = await $FloorChaatBarDatabase
-        .databaseBuilder('basic_structure_database.db')
-        .build();
+    database = await DatabaseHelper().database;
 
     cartDataDao = database.cartDao;
     cartDataDao.clearAllCartProduct();

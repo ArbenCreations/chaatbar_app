@@ -9,9 +9,6 @@ import 'homeScreen.dart';
 import 'orderHistory/orderHistoryScreen.dart';
 
 class BottomNavigation extends StatefulWidget {
-  final Function(ThemeMode) onThemeChanged;
-
-  BottomNavigation({required this.onThemeChanged});
 
   @override
   _BottomNavigationState createState() => _BottomNavigationState();
@@ -23,13 +20,11 @@ class _BottomNavigationState extends State<BottomNavigation>
   final LocalAuthentication auth = LocalAuthentication();
   late AnimationController _animationController;
   late Animation<double> _animation;
-  bool _authOnResume = false;
   bool? isUserAuthenticated;
   static List<Widget> _widgetOptions = <Widget>[];
   Color primaryColor = AppColor.Primary;
   Color? secondaryColor = Colors.red[100];
   Color? lightColor = Colors.red[50];
-  int _currentIndex = 0;
   PageController _pageController = PageController();
 
   @override
@@ -38,7 +33,7 @@ class _BottomNavigationState extends State<BottomNavigation>
     _widgetOptions = <Widget>[
       OrderHistoryScreen(),
       HomeScreen(),
-      ProfileScreen(onThemeChanged: widget.onThemeChanged),
+      ProfileScreen(),
     ];
     Helper.getUserAuthenticated().then((onValue) {
       isUserAuthenticated = onValue;
@@ -75,7 +70,6 @@ class _BottomNavigationState extends State<BottomNavigation>
 
   @override
   Widget build(BuildContext context) {
-    bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
         resizeToAvoidBottomInset: false,
         body: Center(

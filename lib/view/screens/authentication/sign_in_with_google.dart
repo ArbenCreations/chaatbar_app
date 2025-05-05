@@ -102,7 +102,7 @@ Future<void> getSignInResponse(
 
       // Check if the token was saved successfully
       if (isSaved) {
-        print('Token saved successfully.');
+
       } else {
         print('Failed to save token.');
       }
